@@ -1,6 +1,7 @@
 // netlify/functions/schools-save.js
-// Saves Parker's schools, statuses, logs, and notes to Netlify Blobs.
-// Body shape: { schools: [...], statuses: {...}, logs: {...}, notes: {...} }
+// Saves Parker's schools, statuses, logs, notes, hiddenIds, and sectionOverrides
+// to Netlify Blobs.
+// Body shape: { schools: [...], statuses: {...}, logs: {...}, notes: {...}, hiddenIds: [...], sectionOverrides: {...} }
 
 import { getStore } from "@netlify/blobs";
 
@@ -20,10 +21,12 @@ export default async (req, context) => {
     const existing = (await store.get("user-data", { type: "json" })) || {};
 
     const payload = {
-      schools:   body.schools   ?? existing.schools   ?? [],
-      statuses:  body.statuses  ?? existing.statuses  ?? {},
-      logs:      body.logs      ?? existing.logs      ?? {},
-      notes:     body.notes     ?? existing.notes     ?? {},
+      schools:          body.schools          ?? existing.schools          ?? [],
+      statuses:         body.statuses         ?? existing.statuses         ?? {},
+      logs:             body.logs             ?? existing.logs             ?? {},
+      notes:            body.notes            ?? existing.notes            ?? {},
+      hiddenIds:        body.hiddenIds        ?? existing.hiddenIds        ?? [],
+      sectionOverrides: body.sectionOverrides ?? existing.sectionOverrides ?? {},
       updatedAt: new Date().toISOString(),
     };
 
