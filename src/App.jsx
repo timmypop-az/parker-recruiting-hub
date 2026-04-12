@@ -1271,7 +1271,7 @@ export default function App() {
   const [notes, setNotes] = useState({});
   const [hiddenIds, setHiddenIds] = useState(new Set());
   const [sectionOverrides, setSectionOverrides] = useState({});
-  const [isHydrated, setIsHydrated] = useState(false);
+  const hydratedRef = React.useRef(false);
 
   // Hide/move helpers
   const isHidden = (id) => hiddenIds.has(id);
@@ -1294,14 +1294,16 @@ export default function App() {
       } catch (err) {
         console.warn("Failed to hydrate user data:", err);
       } finally {
-        setIsHydrated(true);
+        // Defer marking hydrated until after React commits the setX() calls above.
+        // This prevents the save effect from firing with pre-hydration empty state.
+        setTimeout(() => { hydratedRef.current = true; }, 0);
       }
     })();
   }, []);
 
   // Debounced save to Netlify Blobs whenever any persisted state changes
   useEffect(() => {
-    if (!isHydrated) return; // don't save during initial hydration
+    if (!hydratedRef.current) return; // skip during initial hydration
     const timer = setTimeout(() => {
       saveUserData({
         schools: extraSchools,
@@ -1313,7 +1315,7 @@ export default function App() {
       }).catch(err => console.warn("Save failed:", err));
     }, 600);
     return () => clearTimeout(timer);
-  }, [extraSchools, statuses, logs, notes, hiddenIds, sectionOverrides, isHydrated]);
+  }, [extraSchools, statuses, logs, notes, hiddenIds, sectionOverrides]);
 
   const [view, setView] = useState('master');
   const [sel, setSel] = useState(null);
