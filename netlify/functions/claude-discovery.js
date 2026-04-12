@@ -19,22 +19,66 @@ exports.handler = async (event) => {
       return { statusCode: 500, body: JSON.stringify({ error: 'API key not configured' }) };
     }
 
-    const prompt = `You are a college volleyball recruiting expert. Provide comprehensive data for "${schoolName}" men's volleyball program for a recruit named Parker Henderson (setter, born 5/10/09, Brophy College Prep Phoenix AZ, club: AZ Fear 17s, interests: business, aviation, theology).
-Return ONLY valid JSON (no markdown, no backticks):
+    const prompt = `CRITICAL INSTRUCTION: You are researching "${schoolName}" for Parker Henderson's college volleyball recruiting profile.
+
+ASSUMPTION: Assume this school HAS a men's volleyball program unless it is clearly NOT a real college (e.g., "Fake School", "Test University", "Made Up College"). 
+
+Your task: Research ${schoolName} and provide a detailed JSON profile. Include:
+- Basic info (name, city, state, mascot)
+- Athletic division (DI, DII, DIII, NAIA, JUCO)
+- Conference
+- Head coach info (name, email if known)
+- Setter depth chart (if available)
+- Academic programs (top 10)
+- Fit analysis for Parker (setter, interests: business, aviation, theology)
+- Program strength (ranking if known)
+- Recent records
+- Tuition and acceptance
+
+Return ONLY valid JSON (no markdown, no backticks, no preamble):
 {
-  "id": "short_id", "name": "Full Name", "city": "City", "state": "ST", "mascot": "Mascot",
-  "divLevel": "DI|DII|DIII|NAIA|JUCO", "conference": "Conference name",
-  "acceptance": "XX%", "tuitionIn": "$XX,XXX", "tuitionOut": "$XX,XXX",
-  "programRank": "#XX or NR", "setterNeed": "High|Med|Low", "priority": "Reach|Target|Safety",
-  "url": "https://school.edu", "logoUrl": "https://school.edu", "vbUrl": "https://...", "programIG": "@handle", "questionnaireUrl": "https://...",
-  "academic": { "top10": ["Major1","Major2"], "business": "description", "theology": "description", "aviation": "description", "avgGPA": "3.X", "gradRate": "XX%" },
-  "parkerFit": { "business": true, "aviation": false, "theology": true, "notes": "2-3 sentence explanation of why this school fits Parker specifically" },
-  "coaches": [{ "name": "Name", "role": "Head Coach", "email": "email@school.edu", "phone": "" }],
-  "setters": [{ "name": "Name", "grad": "20XX", "class": "JR" }],
-  "azRadar": [], "winHistory": [{ "yr": "2025", "w": 0, "l": 0, "p": ".000" }],
-  "schedule26": [], "news": [], "notes": "", "section": "discovery", "isVolleyballSchool": true
-}
-If no men's volleyball program, return: {"isVolleyballSchool": false}`;
+  "id": "short_id",
+  "name": "School Name",
+  "city": "City",
+  "state": "ST",
+  "mascot": "Mascot Name",
+  "divLevel": "DI|DII|DIII|NAIA|JUCO",
+  "conference": "Conference Name",
+  "acceptance": "XX%",
+  "tuitionIn": "$XX,XXX",
+  "tuitionOut": "$XX,XXX",
+  "programRank": "#XX or NR",
+  "setterNeed": "High|Med|Low",
+  "priority": "Reach|Target|Safety",
+  "url": "https://school.edu",
+  "logoUrl": "https://school.edu",
+  "vbUrl": "https://school.edu/volleyball",
+  "programIG": "@handle",
+  "questionnaireUrl": "#",
+  "academic": {
+    "top10": ["Prog1", "Prog2", "Prog3"],
+    "business": "Description",
+    "theology": "Description or N/A",
+    "aviation": "Description or N/A",
+    "avgGPA": "3.X",
+    "gradRate": "XX%"
+  },
+  "parkerFit": {
+    "business": true|false,
+    "aviation": true|false,
+    "theology": true|false,
+    "notes": "Brief fit explanation"
+  },
+  "coaches": [{"name": "Coach Name", "role": "Head Coach", "email": "email@school.edu", "phone": ""}],
+  "setters": [{"name": "Setter", "grad": "20XX", "class": "JR"}],
+  "azRadar": [],
+  "winHistory": [{"yr": "2025", "w": 0, "l": 0, "p": ".000"}],
+  "schedule26": [],
+  "news": [],
+  "notes": "",
+  "section": "discovery",
+  "isVolleyballSchool": true
+}`;
 
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
