@@ -394,7 +394,7 @@ const ALL_SCHOOLS_DATA = [
     parkerFit: { business: true, aviation: true, theology: false, notes: "If Parker's path leads toward aviation as a primary major, OCC's Aviation Academy is nationally elite. This JUCO path (2 years + transfer) could allow Parker to develop his game and then transfer to a 4-year program. Lowest cost option on the list by far." },
     coaches: [{ name: "Travis Turner", role: "Head Coach", email: "tturner@occ.cccd.edu", phone: "" }],
     setters: [], azRadar: [],
-    winHistory: [{ yr: '2026', w: 14, l: 0, p: '1.000' }, { yr: '2025', w: 18, l: 6, p: '.750' }],
+    winHistory: [{ yr: '2026', w: 20, l: 0, p: '1.000' }, { yr: '2025', w: 21, l: 4, p: '.840' }],
     news: [], schedule26: [], notes: ""
   },
   // ── DISCOVERY PHASE ──
