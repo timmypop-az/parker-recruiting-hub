@@ -1,10 +1,11 @@
-import React, { useState, useMemo, useEffect, useRef } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   Search, Target, PlusCircle, ArrowLeft, ShieldCheck, Compass,
   ChevronRight, Instagram, Sparkles, Loader2, Trophy,
   MapPin, TrendingUp, GraduationCap,
   Mail, Calendar, Zap, BookOpen, Users, Star, Plane, Church,
-  Copy, Check, FileText, Send, Cloud, CloudOff, Download, Upload
+  Copy, Check, FileText, Send,
+  MoreVertical, EyeOff, Eye, ArrowUpCircle, ArrowDownCircle, ChevronDown
 } from 'lucide-react';
 
 const FontStyle = () => (
@@ -44,43 +45,6 @@ const DIV_CONFIG = {
   "JUCO": { label: "JUCO",  bg: "bg-slate-500",   text: "text-white" },
 };
 
-// ─── LOCAL STORAGE KEY ───────────────────────────────────────────────────────
-// Single key holds {schools, statuses, logs, notes} as offline fallback.
-// Cloud (Netlify Blobs) is the source of truth when available.
-const LS_KEY = 'parker_hub_data_v2';
-
-// ─── PERSISTENCE API (Netlify Blobs via Functions) ───────────────────────────
-async function loadFromCloud() {
-  const res = await fetch('/.netlify/functions/schools-load');
-  if (!res.ok) throw new Error(`load failed: ${res.status}`);
-  return res.json(); // { schools, statuses, logs, notes }
-}
-
-async function saveToCloud(payload) {
-  const res = await fetch('/.netlify/functions/schools-save', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
-  });
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err.error || `save failed: ${res.status}`);
-  }
-  return res.json();
-}
-
-function loadFromLocal() {
-  try {
-    const raw = localStorage.getItem(LS_KEY);
-    if (!raw) return null;
-    return JSON.parse(raw);
-  } catch { return null; }
-}
-
-function saveToLocal(payload) {
-  try { localStorage.setItem(LS_KEY, JSON.stringify(payload)); } catch { /* full or unavailable */ }
-}
-
 // ─── COACH PHOTO URLs ─────────────────────────────────────────────────────────
 // Direct Sidearm CDN URLs, verified from official athletic roster pages.
 // Falls back to initials avatar when photo fails to load.
@@ -101,6 +65,7 @@ const COACH_PHOTOS = {
   pf:    "https://images.sidearmdev.com/crop?url=https%3A%2F%2Fdxbhsrqyrr690.cloudfront.net%2Fsidearm.nextgen.sites%2Fgomastodons.com%2Fimages%2F2024%2F6%2F20%2FGleason_Donny.jpg&width=180&height=270&type=webp",
   menlo: "https://images.sidearmdev.com/crop?url=https%3A%2F%2Fdxbhsrqyrr690.cloudfront.net%2Fsidearm.nextgen.sites%2Fmenloathletics.com%2Fimages%2F2025%2F10%2F1%2FKeohohou_Alii.jpg&width=180&height=270&type=webp",
 };
+
 
 // ─── FULL SCHOOL DATA ────────────────────────────────────────────────────────
 const ALL_SCHOOLS_DATA = [
@@ -526,7 +491,7 @@ const ALL_SCHOOLS_DATA = [
     coaches: [{ name: "Jay Hosack", role: "Head Coach", email: "jhosack@gmu.edu", phone: "(703) 993-3227" }],
     setters: [],
     azRadar: [],
-    winHistory: [{ yr: '2026', w: 18, l: 7, p: '.720' }, { yr: '2025', w: 15, l: 11, p: '.577' }, { yr: '2024', w: 14, l: 13, p: '.519' }],
+    winHistory: [{ yr: '2026', w: 18, l: 7, p: '.720' }, { yr: '2026', w: 10, l: 14, p: '.417' }, { yr: '2025', w: 15, l: 11, p: '.577' }, { yr: '2024', w: 14, l: 13, p: '.519' }],
     news: [], schedule26: [], notes: ""
   },
   {
@@ -642,6 +607,7 @@ const SchoolLogo = ({ school, size = "md" }) => {
       </div>
     );
   }
+  // letter fallback
   const colors = ["bg-blue-600","bg-violet-600","bg-emerald-600","bg-orange-500","bg-slate-600","bg-rose-600"];
   const colorIdx = (school?.name?.charCodeAt(0) || 0) % colors.length;
   return (
@@ -653,7 +619,7 @@ const SchoolLogo = ({ school, size = "md" }) => {
   );
 };
 
-// ─── BADGE COMPONENTS ────────────────────────────────────────────────────────
+// ─── OTHER COMPONENTS ─────────────────────────────────────────────────────────
 const DivBadge = ({ divLevel, size = "sm" }) => {
   const cfg = DIV_CONFIG[divLevel] || DIV_CONFIG["NAIA"];
   return size === "lg"
@@ -681,7 +647,7 @@ const NeedBadge = ({ need }) => {
   return <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase ${map[need] || "bg-slate-100 text-slate-400"}`}>{need || "?"} need</span>;
 };
 
-// ─── COACH CARD ──────────────────────────────────────────────────────────────
+// ─── COACH CARD WITH HEADSHOT ────────────────────────────────────────────────
 const CoachCard = ({ coach, schoolId }) => {
   const [imgFailed, setImgFailed] = useState(false);
   const photoUrl = COACH_PHOTOS[schoolId];
@@ -690,15 +656,22 @@ const CoachCard = ({ coach, schoolId }) => {
   return (
     <div className="p-4 bg-slate-50 rounded-xl border border-slate-100">
       <div className="flex items-start gap-3">
+        {/* Headshot */}
         <div className="flex-shrink-0 w-16 h-20 rounded-xl overflow-hidden bg-slate-200 border border-slate-200 flex items-center justify-center">
           {photoUrl && !imgFailed ? (
-            <img src={photoUrl} alt={coach.name} className="w-full h-full object-cover object-top" onError={() => setImgFailed(true)} />
+            <img
+              src={photoUrl}
+              alt={coach.name}
+              className="w-full h-full object-cover object-top"
+              onError={() => setImgFailed(true)}
+            />
           ) : (
             <div className="w-full h-full bg-gradient-to-br from-blue-600 to-blue-800 flex items-center justify-center">
               <span className="text-white font-black text-lg" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>{initials}</span>
             </div>
           )}
         </div>
+        {/* Info */}
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-1 mb-1">
             <span className="font-bold text-slate-800 text-sm leading-tight">{coach.name}</span>
@@ -716,12 +689,15 @@ const CoachCard = ({ coach, schoolId }) => {
               <span>{coach.phone}</span>
             </div>
           )}
-          {!photoUrl && <div className="text-[10px] text-amber-600 mt-1.5 font-medium">📷 No photo on file</div>}
+          {!photoUrl && (
+            <div className="text-[10px] text-amber-600 mt-1.5 font-medium">📷 No photo on file</div>
+          )}
         </div>
       </div>
     </div>
   );
 };
+
 
 // ─── EXECUTIVE SUMMARY ───────────────────────────────────────────────────────
 const ExecutiveSummary = ({ school }) => {
@@ -776,7 +752,7 @@ const ExecutiveSummary = ({ school }) => {
   );
 };
 
-// ─── DISCOVERY ENGINE API ────────────────────────────────────────────────────
+// ─── CLAUDE API ───────────────────────────────────────────────────────────────
 async function fetchSchoolFromClaude(schoolName) {
   const res = await fetch("/.netlify/functions/claude-discovery", {
     method: "POST",
@@ -790,7 +766,33 @@ async function fetchSchoolFromClaude(schoolName) {
   return res.json();
 }
 
+// ─── NETLIFY BLOBS: Unified load/save for all user data ──────────────────────
+// Persists schools, statuses, logs, notes, hiddenIds, and sectionOverrides
+// to Netlify Blobs via the schools-load / schools-save functions.
+async function loadUserData() {
+  const res = await fetch("/.netlify/functions/schools-load");
+  if (!res.ok) {
+    console.warn("Failed to load user data:", res.status);
+    return {};
+  }
+  return res.json();
+}
+
+async function saveUserData(payload) {
+  const res = await fetch("/.netlify/functions/schools-save", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || `Save error: ${res.status}`);
+  }
+  return res.json();
+}
+
 // ─── EMAIL TEMPLATES ─────────────────────────────────────────────────────────
+
 const buildTemplate = (id, school) => {
   const coachName = school?.coaches?.[0]?.name?.split(' ').slice(-1)[0] || "[Coach's Last Name]";
   const uName = school?.name || '[University Name]';
@@ -861,6 +863,7 @@ const EmailTemplatesView = ({ school, onBack }) => {
       </div>
 
       <div className="max-w-5xl mx-auto px-6 pb-20 pt-8">
+        {/* STRATEGY BANNER */}
         <div className="rounded-2xl mb-8 p-6 border border-blue-200" style={{ background: 'linear-gradient(135deg, #eff6ff, #dbeafe)' }}>
           <div className="flex items-start gap-4">
             <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center flex-shrink-0">
@@ -881,6 +884,7 @@ const EmailTemplatesView = ({ school, onBack }) => {
           </div>
         </div>
 
+        {/* TAB SWITCHER */}
         <div className="flex gap-3 mb-6">
           {tIds.map(id => {
             const t = buildTemplate(id, school);
@@ -896,6 +900,7 @@ const EmailTemplatesView = ({ school, onBack }) => {
           })}
         </div>
 
+        {/* ACTIVE TEMPLATE CARD */}
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
           <div className={`px-6 py-3 flex items-center gap-2 text-sm font-semibold border-b border-slate-100 ${colors.light}`}>
             <span className="text-lg">{tpl.icon === 'mail' ? '✉️' : tpl.icon === 'send' ? '🏆' : '🎥'}</span>
@@ -905,6 +910,7 @@ const EmailTemplatesView = ({ school, onBack }) => {
             )}
           </div>
           <div className="p-6 space-y-5">
+            {/* SUBJECT */}
             <div>
               <div className="flex items-center justify-between mb-2">
                 <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Subject Line</label>
@@ -917,6 +923,7 @@ const EmailTemplatesView = ({ school, onBack }) => {
               <input className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-semibold text-slate-800 outline-none focus:border-blue-400 focus:bg-white transition-all"
                 value={getSubject(activeTab)} onChange={e => setEditedSubjects(prev => ({ ...prev, [activeTab]: e.target.value }))} />
             </div>
+            {/* BODY */}
             <div>
               <div className="flex items-center justify-between mb-2">
                 <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Email Body</label>
@@ -930,6 +937,7 @@ const EmailTemplatesView = ({ school, onBack }) => {
                 style={{ minHeight: '420px', fontFamily: 'ui-monospace, monospace' }}
                 value={getBody(activeTab)} onChange={e => setEditedBodies(prev => ({ ...prev, [activeTab]: e.target.value }))} />
             </div>
+            {/* ACTIONS */}
             <div className="flex flex-wrap gap-3 pt-2 border-t border-slate-100">
               <button onClick={() => copy(`Subject: ${getSubject(activeTab)}\n\n${getBody(activeTab)}`, `all-${activeTab}`)}
                 className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm uppercase tracking-wide transition-all ${colors.btn}`}>
@@ -950,6 +958,7 @@ const EmailTemplatesView = ({ school, onBack }) => {
           </div>
         </div>
 
+        {/* QUICK REF */}
         <div className="mt-8">
           <h3 className="font-black text-slate-700 text-base uppercase tracking-widest mb-4" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>Quick Reference — All 3 Phases</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -970,6 +979,7 @@ const EmailTemplatesView = ({ school, onBack }) => {
           </div>
         </div>
 
+        {/* PRO TIPS */}
         <div className="mt-8 bg-slate-900 rounded-2xl p-6 text-white">
           <div className="font-black text-white text-lg mb-4 uppercase tracking-widest" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>📋 Outreach Pro Tips</div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-slate-300 leading-relaxed">
@@ -995,17 +1005,21 @@ const EmailTemplatesView = ({ school, onBack }) => {
 
 
 // ─── GMAIL DRAFTS VIEW ───────────────────────────────────────────────────────
+
+const GMAIL_CLIENT_ID = ''; // User will paste their Client ID here — see instructions
+
 const GmailDraftsView = ({ allSchools, onBack }) => {
   const [authToken, setAuthToken] = useState(null);
   const [clientId, setClientId] = useState('');
   const [draftPhase, setDraftPhase] = useState('intro');
-  const [results, setResults] = useState({});
+  const [results, setResults] = useState({}); // schoolId -> 'pending'|'done'|'error'|'skipped'
   const [isRunning, setIsRunning] = useState(false);
   const [currentSchool, setCurrentSchool] = useState('');
   const [showSetup, setShowSetup] = useState(true);
 
-  const schoolsWithEmail = allSchools.filter(s => s.coaches?.[0]?.email);
+  const schoolsWithEmail = allSchools.filter(s => s.coaches?.[0]?.email && s.coaches[0].email !== 'recruit@jessup.edu' || s.coaches?.[0]?.email);
 
+  // Gmail OAuth via Google Identity Services (GIS)
   const signIn = () => {
     if (!clientId.trim()) { alert('Please enter your Google OAuth Client ID first.'); return; }
     const scope = 'https://www.googleapis.com/auth/gmail.compose';
@@ -1031,6 +1045,7 @@ const GmailDraftsView = ({ allSchools, onBack }) => {
   const createDraft = async (school) => {
     const { subject, body, to } = buildDraftBody(school);
     if (!to) return 'skipped';
+    // RFC 2822 message
     const message = [
       `To: ${to}`,
       `Subject: ${subject}`,
@@ -1060,7 +1075,7 @@ const GmailDraftsView = ({ allSchools, onBack }) => {
       } catch {
         setResults(prev => ({ ...prev, [school.id]: 'error' }));
       }
-      await new Promise(r => setTimeout(r, 400));
+      await new Promise(r => setTimeout(r, 400)); // gentle rate limiting
     }
     setCurrentSchool('');
     setIsRunning(false);
@@ -1074,7 +1089,11 @@ const GmailDraftsView = ({ allSchools, onBack }) => {
   return (
     <div className="min-h-screen" style={{ background: "#f1f4f9" }}>
       <FontStyle />
+
+      {/* Load Google Identity Services */}
       <script src="https://accounts.google.com/gsi/client" async></script>
+
+      {/* HEADER */}
       <div style={{ background: "linear-gradient(135deg, #0f172a, #1e3a5f)" }} className="px-8 py-6">
         <div className="max-w-4xl mx-auto flex items-center justify-between gap-8">
           <div>
@@ -1093,12 +1112,16 @@ const GmailDraftsView = ({ allSchools, onBack }) => {
       </div>
 
       <div className="max-w-4xl mx-auto px-6 pb-20 pt-8 space-y-6">
+
+        {/* SETUP PANEL */}
         {showSetup && (
           <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-black text-sm">1</div>
               <h2 className="font-black text-slate-800 text-lg uppercase tracking-widest" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>Connect Your Gmail Account</h2>
             </div>
+
+            {/* INSTRUCTIONS */}
             <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-5 text-sm text-amber-900 leading-relaxed">
               <div className="font-black mb-2 uppercase tracking-wide text-xs">One-Time Setup Required</div>
               <ol className="space-y-1.5 list-decimal list-inside">
@@ -1111,6 +1134,7 @@ const GmailDraftsView = ({ allSchools, onBack }) => {
                 <li>Copy the <strong>Client ID</strong> and paste it below</li>
               </ol>
             </div>
+
             <div className="space-y-3">
               <div>
                 <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1.5">Google OAuth Client ID</label>
@@ -1129,14 +1153,17 @@ const GmailDraftsView = ({ allSchools, onBack }) => {
           </div>
         )}
 
+        {/* CONNECTED STATE */}
         {!showSetup && (
           <>
+            {/* SUCCESS BANNER */}
             <div className="flex items-center gap-3 bg-emerald-50 border border-emerald-200 rounded-2xl px-5 py-3">
               <Check className="w-5 h-5 text-emerald-600 flex-shrink-0" />
               <span className="text-emerald-800 font-bold text-sm">Connected to parkerhenderson.setter.2028@gmail.com</span>
               <button onClick={signOut} className="ml-auto text-xs text-slate-400 hover:text-slate-600 font-bold uppercase tracking-wide">Disconnect</button>
             </div>
 
+            {/* PHASE SELECTOR */}
             <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-black text-sm">2</div>
@@ -1152,6 +1179,7 @@ const GmailDraftsView = ({ allSchools, onBack }) => {
               </div>
             </div>
 
+            {/* SCHOOL LIST + LAUNCH */}
             <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
               <div className="flex items-center justify-between mb-5">
                 <div className="flex items-center gap-3">
@@ -1168,6 +1196,7 @@ const GmailDraftsView = ({ allSchools, onBack }) => {
                 </button>
               </div>
 
+              {/* PROGRESS SUMMARY */}
               {Object.keys(results).length > 0 && (
                 <div className="flex gap-3 mb-4 p-3 bg-slate-50 rounded-xl">
                   <span className="text-emerald-600 font-bold text-sm">✓ {doneCount} created</span>
@@ -1175,15 +1204,18 @@ const GmailDraftsView = ({ allSchools, onBack }) => {
                   <span className="text-slate-400 text-sm">{Object.keys(results).length} / {schoolsWithEmail.length} processed</span>
                   {!isRunning && doneCount > 0 && (
                     <a href="https://mail.google.com/mail/u/0/#drafts" target="_blank" rel="noreferrer"
-                      className="ml-auto text-blue-600 font-bold text-xs hover:underline">Open Gmail Drafts ↗</a>
+                      className="ml-auto text-blue-600 font-bold text-xs hover:underline">
+                      Open Gmail Drafts ↗
+                    </a>
                   )}
                 </div>
               )}
 
+              {/* SCHOOL ROWS */}
               <div className="space-y-2">
                 {schoolsWithEmail.map(school => {
                   const status = results[school.id];
-                  const { to } = buildDraftBody(school);
+                  const { subject, to } = buildDraftBody(school);
                   return (
                     <div key={school.id} className={`flex items-center gap-3 px-4 py-3 rounded-xl border transition-all ${
                       status === 'done'    ? 'bg-emerald-50 border-emerald-200' :
@@ -1210,6 +1242,7 @@ const GmailDraftsView = ({ allSchools, onBack }) => {
               </div>
             </div>
 
+            {/* DONE STATE */}
             {!isRunning && doneCount === schoolsWithEmail.length && doneCount > 0 && (
               <div className="bg-emerald-600 rounded-2xl p-6 text-white text-center">
                 <div className="text-4xl mb-2">🎉</div>
@@ -1229,163 +1262,85 @@ const GmailDraftsView = ({ allSchools, onBack }) => {
 };
 
 
-// ─── SYNC STATUS BANNER ──────────────────────────────────────────────────────
-const SyncBanner = ({ status, lastSync, onExport, onImport, onRetry }) => {
-  const fileInputRef = useRef(null);
-  const cfg = {
-    loading: { bg: 'bg-blue-50 border-blue-200', text: 'text-blue-900', sub: 'text-blue-700', icon: <Loader2 className="w-4 h-4 animate-spin" />, label: 'Loading from cloud…' },
-    cloud:   { bg: 'bg-emerald-50 border-emerald-200', text: 'text-emerald-900', sub: 'text-emerald-700', icon: <Cloud className="w-4 h-4" />, label: 'Synced to cloud' },
-    saving:  { bg: 'bg-blue-50 border-blue-200', text: 'text-blue-900', sub: 'text-blue-700', icon: <Loader2 className="w-4 h-4 animate-spin" />, label: 'Saving to cloud…' },
-    local:   { bg: 'bg-amber-50 border-amber-200', text: 'text-amber-900', sub: 'text-amber-700', icon: <CloudOff className="w-4 h-4" />, label: 'Cloud unavailable — saved locally only' },
-    error:   { bg: 'bg-red-50 border-red-200', text: 'text-red-900', sub: 'text-red-700', icon: <CloudOff className="w-4 h-4" />, label: 'Sync failed — using local backup' },
-  }[status] || cfg?.loading;
-
-  return (
-    <div className={`border rounded-2xl p-4 flex items-center gap-3 ${cfg.bg}`}>
-      <div className={cfg.text}>{cfg.icon}</div>
-      <div className="flex-1">
-        <div className={`font-bold text-sm ${cfg.text}`}>{cfg.label}</div>
-        {lastSync && <div className={`text-xs mt-0.5 ${cfg.sub}`}>Last sync: {new Date(lastSync).toLocaleString()}</div>}
-      </div>
-      <div className="flex gap-2">
-        {(status === 'local' || status === 'error') && onRetry && (
-          <button onClick={onRetry} className="px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-bold text-slate-700 hover:bg-slate-50">Retry</button>
-        )}
-        <button onClick={onExport} className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-bold text-slate-700 hover:bg-slate-50">
-          <Download className="w-3 h-3" /> Export
-        </button>
-        <button onClick={() => fileInputRef.current?.click()} className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-bold text-slate-700 hover:bg-slate-50">
-          <Upload className="w-3 h-3" /> Import
-        </button>
-        <input ref={fileInputRef} type="file" accept="application/json" className="hidden"
-          onChange={(e) => { const f = e.target.files?.[0]; if (f) onImport(f); e.target.value = ''; }} />
-      </div>
-    </div>
-  );
-};
-
 // ─── MAIN APP ─────────────────────────────────────────────────────────────────
 export default function App() {
-  // Persisted user state — schools added via Discovery, plus statuses/logs/notes
+  // ── PERSISTED STATE (loaded from Netlify Blobs on mount, saved on change) ──
   const [extraSchools, setExtraSchools] = useState([]);
-  const [statuses, setStatuses]         = useState({});
-  const [logs, setLogs]                 = useState({});
-  const [notes, setNotes]               = useState({});
+  const [statuses, setStatuses] = useState({});
+  const [logs, setLogs] = useState({});
+  const [notes, setNotes] = useState({});
+  const [hiddenIds, setHiddenIds] = useState(new Set());
+  const [sectionOverrides, setSectionOverrides] = useState({});
+  const [isHydrated, setIsHydrated] = useState(false);
 
-  // Sync state
-  const [syncStatus, setSyncStatus] = useState('loading'); // loading | cloud | saving | local | error
-  const [lastSync, setLastSync]     = useState(null);
-  const [hasLoaded, setHasLoaded]   = useState(false);     // gate saves until first load completes
+  // Hide/move helpers
+  const isHidden = (id) => hiddenIds.has(id);
+  const getEffectiveSection = (school) => sectionOverrides[school.id] || school.section;
+  const hideSchool = (id) => setHiddenIds(prev => { const n = new Set(prev); n.add(id); return n; });
+  const unhideSchool = (id) => setHiddenIds(prev => { const n = new Set(prev); n.delete(id); return n; });
+  const moveToSection = (id, section) => setSectionOverrides(prev => ({ ...prev, [id]: section }));
 
-  // UI state
-  const [view, setView]                 = useState('master');
-  const [sel, setSel]                   = useState(null);
-  const [search, setSearch]             = useState('');
-  const [divFilter, setDivFilter]       = useState('All');
-  const [newSchoolName, setNewSchoolName] = useState('');
-  const [isSearching, setIsSearching]   = useState(false);
-  const [logDate, setLogDate]           = useState('');
-  const [logType, setLogType]           = useState('Submitted Questionnaire');
-
-  // ── INITIAL LOAD: cloud first, fall back to localStorage ──────────────────
+  // Hydrate everything from Netlify Blobs once on mount
   useEffect(() => {
-    let alive = true;
     (async () => {
-      // Try cloud
       try {
-        const data = await loadFromCloud();
-        if (!alive) return;
-        setExtraSchools(data.schools  || []);
-        setStatuses(   data.statuses  || {});
-        setLogs(       data.logs      || {});
-        setNotes(      data.notes     || {});
-        setSyncStatus('cloud');
-        setLastSync(new Date().toISOString());
-        setHasLoaded(true);
-        return;
-      } catch (cloudErr) {
-        console.warn('Cloud load failed, falling back to local:', cloudErr);
-      }
-      // Fall back to local
-      const local = loadFromLocal();
-      if (alive && local) {
-        setExtraSchools(local.schools  || []);
-        setStatuses(   local.statuses  || {});
-        setLogs(       local.logs      || {});
-        setNotes(      local.notes     || {});
-      }
-      if (alive) {
-        setSyncStatus('local');
-        setHasLoaded(true);
+        const data = await loadUserData();
+        if (Array.isArray(data.schools)) setExtraSchools(data.schools);
+        if (data.statuses && typeof data.statuses === 'object') setStatuses(data.statuses);
+        if (data.logs && typeof data.logs === 'object') setLogs(data.logs);
+        if (data.notes && typeof data.notes === 'object') setNotes(data.notes);
+        if (Array.isArray(data.hiddenIds)) setHiddenIds(new Set(data.hiddenIds));
+        if (data.sectionOverrides && typeof data.sectionOverrides === 'object') setSectionOverrides(data.sectionOverrides);
+      } catch (err) {
+        console.warn("Failed to hydrate user data:", err);
+      } finally {
+        setIsHydrated(true);
       }
     })();
-    return () => { alive = false; };
   }, []);
 
-  // ── DEBOUNCED SAVE: writes to cloud + local whenever data changes ─────────
+  // Debounced save to Netlify Blobs whenever any persisted state changes
   useEffect(() => {
-    if (!hasLoaded) return; // never save before first load completes
-    const payload = { schools: extraSchools, statuses, logs, notes };
-    // Always save to local immediately as a safety net
-    saveToLocal(payload);
-    // Debounce cloud save
-    const timer = setTimeout(async () => {
-      setSyncStatus(s => (s === 'cloud' || s === 'saving' ? 'saving' : s));
-      try {
-        const result = await saveToCloud(payload);
-        setSyncStatus('cloud');
-        setLastSync(result.updatedAt || new Date().toISOString());
-      } catch (err) {
-        console.warn('Cloud save failed, kept local:', err);
-        setSyncStatus('local');
-      }
-    }, 800);
+    if (!isHydrated) return; // don't save during initial hydration
+    const timer = setTimeout(() => {
+      saveUserData({
+        schools: extraSchools,
+        statuses,
+        logs,
+        notes,
+        hiddenIds: [...hiddenIds],
+        sectionOverrides,
+      }).catch(err => console.warn("Save failed:", err));
+    }, 600);
     return () => clearTimeout(timer);
-  }, [extraSchools, statuses, logs, notes, hasLoaded]);
+  }, [extraSchools, statuses, logs, notes, hiddenIds, sectionOverrides, isHydrated]);
 
-  // ── EXPORT / IMPORT JSON BACKUP ────────────────────────────────────────────
-  const handleExport = () => {
-    const payload = { schools: extraSchools, statuses, logs, notes, exportedAt: new Date().toISOString(), version: 'v2' };
-    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    const stamp = new Date().toISOString().slice(0, 10);
-    a.href = url;
-    a.download = `parker-recruiting-hub-backup-${stamp}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
+  const [view, setView] = useState('master');
+  const [sel, setSel] = useState(null);
+  const [search, setSearch] = useState('');
+  const [divFilter, setDivFilter] = useState('All');
+  const [newSchoolName, setNewSchoolName] = useState('');
+  const [isSearching, setIsSearching] = useState(false);
+  const [logDate, setLogDate] = useState('');
+  const [logType, setLogType] = useState('Submitted Questionnaire');
+  const [showHidden, setShowHidden] = useState(false);
+  const [openMenuId, setOpenMenuId] = useState(null);
 
-  const handleImport = async (file) => {
-    try {
-      const text = await file.text();
-      const data = JSON.parse(text);
-      if (!confirm(`Import backup from ${data.exportedAt || 'unknown date'}?\n\nThis will REPLACE your current data:\n• ${data.schools?.length || 0} added schools\n• ${Object.keys(data.statuses || {}).length} pipeline statuses\n• ${Object.keys(data.logs || {}).length} interaction logs\n• ${Object.keys(data.notes || {}).length} notes`)) return;
-      setExtraSchools(data.schools  || []);
-      setStatuses(   data.statuses  || {});
-      setLogs(       data.logs      || {});
-      setNotes(      data.notes     || {});
-    } catch (err) {
-      alert(`Import failed: ${err.message}`);
-    }
-  };
+  // Click-outside dismiss for the ⋯ menu
+  useEffect(() => {
+    if (!openMenuId) return;
+    const onDocClick = (e) => {
+      if (!e.target.closest('[data-row-menu]')) setOpenMenuId(null);
+    };
+    document.addEventListener('mousedown', onDocClick);
+    return () => document.removeEventListener('mousedown', onDocClick);
+  }, [openMenuId]);
 
-  const handleRetrySync = async () => {
-    setSyncStatus('saving');
-    try {
-      const result = await saveToCloud({ schools: extraSchools, statuses, logs, notes });
-      setSyncStatus('cloud');
-      setLastSync(result.updatedAt || new Date().toISOString());
-    } catch (err) {
-      setSyncStatus('error');
-      alert(`Sync still failing: ${err.message}\n\nYour data is safe in local storage. Try Export to make a backup.`);
-    }
-  };
-
-  // ── DERIVED ────────────────────────────────────────────────────────────────
-  const allSchools       = useMemo(() => [...ALL_SCHOOLS_DATA, ...extraSchools], [extraSchools]);
-  const primarySchools   = useMemo(() => allSchools.filter(s => s.section === "primary"), [allSchools]);
-  const discoverySchools = useMemo(() => allSchools.filter(s => s.section === "discovery"), [allSchools]);
+  const allSchools = useMemo(() => [...ALL_SCHOOLS_DATA, ...extraSchools], [extraSchools]);
+  const visibleSchools = useMemo(() => allSchools.filter(s => !isHidden(s.id)), [allSchools, hiddenIds]);
+  const primarySchools = useMemo(() => visibleSchools.filter(s => getEffectiveSection(s) === "primary"), [visibleSchools, sectionOverrides]);
+  const discoverySchools = useMemo(() => visibleSchools.filter(s => getEffectiveSection(s) === "discovery"), [visibleSchools, sectionOverrides]);
+  const hiddenSchools = useMemo(() => allSchools.filter(s => isHidden(s.id)), [allSchools, hiddenIds]);
 
   const divCounts = useMemo(() => {
     const c = {};
@@ -1402,10 +1357,9 @@ export default function App() {
     return matchSearch && matchDiv;
   });
 
-  const filteredPrimary   = useMemo(() => applyFilters(primarySchools).sort((a,b) => a.name.localeCompare(b.name)), [search, divFilter, primarySchools]);
+  const filteredPrimary = useMemo(() => applyFilters(primarySchools).sort((a,b) => a.name.localeCompare(b.name)), [search, divFilter, primarySchools]);
   const filteredDiscovery = useMemo(() => applyFilters(discoverySchools).sort((a,b) => a.name.localeCompare(b.name)), [search, divFilter, discoverySchools]);
 
-  // ── ACTIONS ────────────────────────────────────────────────────────────────
   const handleAddSchool = async () => {
     if (!newSchoolName.trim()) return;
     setIsSearching(true);
@@ -1424,7 +1378,7 @@ export default function App() {
   const navigate = (s) => { setSel(s); setView('detail'); window.scrollTo(0, 0); };
   const goEmail  = (s) => { if (s) setSel(s); setView('email'); window.scrollTo(0, 0); };
   const goGmail  = () => { setView('gmail'); window.scrollTo(0, 0); };
-  const goBack   = () => setView('master');
+  const goBack = () => setView('master');
 
   const addLog = () => {
     if (!logDate || !sel) return;
@@ -1436,12 +1390,12 @@ export default function App() {
   const schoolStatus = sel ? (statuses[sel.id] || "None") : "None";
   const statusIdx = STATUSES.findIndex(s => s.key === schoolStatus);
 
-  // ── SCHOOL ROW ─────────────────────────────────────────────────────────────
+  // ── SCHOOL ROW ──────────────────────────────────────────────────────────────
   const SchoolRow = ({ s, compact = false }) => {
     const sStatus = statuses[s.id] || "None";
     const py = compact ? "py-3" : "py-4";
     return (
-      <tr onClick={() => navigate(s)} className="hover:bg-blue-50/30 cursor-pointer transition-colors group">
+      <tr onClick={() => navigate(s)} className={`hover:bg-blue-50/30 cursor-pointer transition-colors group`}>
         <td className={`px-5 ${py}`}>
           <div className="flex items-center gap-3">
             <SchoolLogo school={s} size={compact ? "sm" : "md"} />
@@ -1477,274 +1431,603 @@ export default function App() {
         </td>
         <td className={`px-5 ${py}`}><NeedBadge need={s.setterNeed} /></td>
         <td className={`px-5 ${py}`}><StatusBadge statusKey={sStatus} /></td>
-        <td className={`px-5 ${py} text-right`}>
-          <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-blue-500 transition-colors inline" />
+        <td className={`px-3 ${py} text-right`} data-row-menu>
+          <div className="inline-flex items-center gap-1 relative">
+            <button
+              onClick={(e) => { e.stopPropagation(); setOpenMenuId(openMenuId === s.id ? null : s.id); }}
+              className="p-1.5 rounded-lg hover:bg-slate-200 text-slate-400 hover:text-slate-700 transition-colors"
+              title="More actions"
+            >
+              <MoreVertical className="w-4 h-4" />
+            </button>
+            <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-blue-500 transition-colors" />
+            {openMenuId === s.id && (
+              <div
+                onClick={(e) => e.stopPropagation()}
+                className="absolute right-6 top-8 z-30 w-52 bg-white border border-slate-200 rounded-xl shadow-xl py-1.5 text-left"
+              >
+                {getEffectiveSection(s) !== "primary" && (
+                  <button
+                    onClick={() => { moveToSection(s.id, "primary"); setOpenMenuId(null); }}
+                    className="w-full flex items-center gap-2.5 px-4 py-2 text-xs font-bold uppercase tracking-wide text-slate-700 hover:bg-blue-50 hover:text-blue-700 transition-colors"
+                  >
+                    <ArrowUpCircle className="w-4 h-4 text-blue-500" />
+                    Move to Primary
+                  </button>
+                )}
+                {getEffectiveSection(s) !== "discovery" && (
+                  <button
+                    onClick={() => { moveToSection(s.id, "discovery"); setOpenMenuId(null); }}
+                    className="w-full flex items-center gap-2.5 px-4 py-2 text-xs font-bold uppercase tracking-wide text-slate-700 hover:bg-indigo-50 hover:text-indigo-700 transition-colors"
+                  >
+                    <ArrowDownCircle className="w-4 h-4 text-indigo-500" />
+                    Move to Discovery
+                  </button>
+                )}
+                <div className="border-t border-slate-100 my-1" />
+                <button
+                  onClick={() => { hideSchool(s.id); setOpenMenuId(null); }}
+                  className="w-full flex items-center gap-2.5 px-4 py-2 text-xs font-bold uppercase tracking-wide text-slate-700 hover:bg-rose-50 hover:text-rose-700 transition-colors"
+                >
+                  <EyeOff className="w-4 h-4 text-rose-500" />
+                  Hide School
+                </button>
+              </div>
+            )}
+          </div>
         </td>
       </tr>
     );
   };
 
+  // ── MASTER VIEW ──────────────────────────────────────────────────────────────
+  if (view === 'master') return (
+    <div className="min-h-screen" style={{ background: "#f1f4f9" }}>
+      <FontStyle />
 
-  // ── VIEW DISPATCH ──────────────────────────────────────────────────────────
-  if (view === 'email') {
-    return <EmailTemplatesView school={sel} onBack={sel ? () => setView('detail') : goBack} />;
-  }
-
-  if (view === 'gmail') {
-    return <GmailDraftsView allSchools={allSchools} onBack={goBack} />;
-  }
-
-  // ── DETAIL VIEW ────────────────────────────────────────────────────────────
-  if (view === 'detail' && sel) {
-    const tally = getRecordTally(sel.schedule26);
-    const trend = getTrend(sel.winHistory);
-    return (
-      <div className="min-h-screen" style={{ background: "#f1f4f9" }}>
-        <FontStyle />
-        <div style={{ background: "linear-gradient(135deg, #0f172a, #1e3a5f)" }} className="px-8 py-6">
-          <div className="max-w-7xl mx-auto flex items-center justify-between gap-6">
-            <button onClick={goBack} className="flex items-center gap-2 bg-white/10 hover:bg-white/20 border border-white/20 px-4 py-2 rounded-xl text-white text-xs font-bold uppercase tracking-wide">
-              <ArrowLeft className="w-4 h-4" /> Back to Dashboard
+      {/* TOP HEADER */}
+      <div style={{ background: "linear-gradient(135deg, #0f172a 0%, #1e293b 60%, #0f2044 100%)" }} className="px-8 py-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+            <div>
+              <div className="flex items-center gap-3 mb-1">
+                <ShieldCheck className="text-blue-400 w-5 h-5" />
+                <span className="text-blue-300 text-xs font-bold uppercase tracking-widest">Brophy College Prep · AZ Fear 17s · Class of 2028</span>
+              </div>
+              <h1 className="font-black text-white tracking-tight leading-none" style={{ fontSize: "2.8rem", fontFamily: "'Barlow Condensed', sans-serif" }}>
+                PARKER HENDERSON <span className="text-blue-400">RECRUITING HUB</span>
+              </h1>
+              <p className="text-slate-400 text-sm mt-1">Men's Volleyball · Setter · {allSchools.length} programs tracked · Business / Aviation / Theology</p>
+            </div>
+            <div className="flex flex-wrap gap-3">
+              {[
+                { label: "Total Programs", value: allSchools.length, color: "text-white" },
+                { label: "D-I Programs", value: divCounts["DI"] || 0, color: "text-blue-400" },
+                { label: "D-II / NAIA", value: (divCounts["DII"] || 0) + (divCounts["NAIA"] || 0), color: "text-violet-400" },
+                { label: "Contacted", value: contacted, color: "text-emerald-400" },
+              ].map(stat => (
+                <div key={stat.label} className="bg-white/5 border border-white/10 rounded-2xl px-5 py-3 text-center min-w-20">
+                  <div className={`font-black text-2xl leading-none ${stat.color}`} style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>{stat.value}</div>
+                  <div className="text-slate-500 text-[10px] uppercase tracking-wide mt-0.5">{stat.label}</div>
+                </div>
+              ))}
+            </div>
+            <button onClick={() => goEmail(null)}
+              className="flex items-center gap-2 bg-white/10 hover:bg-white/20 border border-white/10 rounded-2xl px-5 py-3 text-white text-xs font-bold uppercase tracking-widest transition-all flex-shrink-0">
+              <Mail className="w-4 h-4 text-blue-300" />
+              Email Templates
             </button>
-            <div className="flex gap-3">
-              {sel.coaches?.[0]?.email && (
-                <button onClick={() => goEmail(sel)} className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 px-5 py-2 rounded-xl text-white text-xs font-bold uppercase tracking-wide">
-                  <Mail className="w-4 h-4" /> Outreach Templates
+            <button onClick={goGmail}
+              className="flex items-center gap-2 bg-emerald-600/80 hover:bg-emerald-500 border border-emerald-400/40 rounded-2xl px-5 py-3 text-white text-xs font-bold uppercase tracking-widest transition-all flex-shrink-0">
+              <Send className="w-4 h-4" />
+              Gmail Drafts
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-6 sm:px-8 pb-20 pt-8 space-y-8">
+
+        {/* DISCOVERY ENGINE */}
+        <div className="rounded-2xl overflow-hidden shadow-lg" style={{ background: "linear-gradient(135deg, #1e3a8a, #1e40af)" }}>
+          <div className="p-8">
+            <div className="flex items-center gap-3 mb-1">
+              <Sparkles className="text-blue-200 w-5 h-5" />
+              <h2 className="font-black text-white text-xl uppercase tracking-widest" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>Discovery Engine</h2>
+            </div>
+            <p className="text-blue-300 text-sm mb-6">Research any college's men's volleyball program instantly — powered by Claude AI. Results include Parker-specific fit analysis.</p>
+            <div className="flex flex-col md:flex-row gap-3">
+              <input type="text" placeholder="Enter college name (e.g. 'Stanford', 'Ohio State')…"
+                className="flex-1 bg-white/10 border border-white/20 rounded-xl px-5 py-3.5 text-white font-semibold placeholder:text-white/30 focus:bg-white/20 outline-none text-sm"
+                value={newSchoolName} onChange={e => setNewSchoolName(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && handleAddSchool()} />
+              <button onClick={handleAddSchool} disabled={isSearching}
+                className="bg-white text-blue-700 px-8 py-3.5 rounded-xl font-bold uppercase tracking-widest text-sm flex items-center justify-center gap-2 hover:bg-blue-50 transition-all disabled:opacity-60 flex-shrink-0">
+                {isSearching ? <Loader2 className="w-4 h-4 animate-spin" /> : <PlusCircle className="w-4 h-4" />}
+                Add Program
+              </button>
+              {extraSchools.length > 0 && (
+                <button onClick={() => { if (window.confirm(`Remove all ${extraSchools.length} added school(s)?`)) setExtraSchools([]); }}
+                  className="bg-white/10 border border-white/20 text-white/60 px-4 py-3.5 rounded-xl text-xs font-bold uppercase tracking-wide hover:bg-white/20 hover:text-white transition-all flex-shrink-0">
+                  Clear Added ({extraSchools.length})
                 </button>
-              )}
-              {sel.questionnaireUrl && sel.questionnaireUrl !== "#" && (
-                <a href={sel.questionnaireUrl} target="_blank" rel="noreferrer" className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 px-5 py-2 rounded-xl text-white text-xs font-bold uppercase tracking-wide">
-                  <FileText className="w-4 h-4" /> Questionnaire ↗
-                </a>
               )}
             </div>
           </div>
         </div>
 
-        <div className="max-w-7xl mx-auto px-6 pb-20 pt-8">
+        {/* FILTER BAR */}
+        <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
+          <div className="flex flex-wrap gap-2">
+            {["All", "DI", "DII", "DIII", "NAIA", "JUCO"].map(d => (
+              <button key={d} onClick={() => setDivFilter(d)}
+                className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wide transition-all ${divFilter === d ? 'bg-slate-800 text-white shadow' : 'bg-white text-slate-500 hover:bg-slate-100 border border-slate-200'}`}>
+                {d === "All" ? `All (${allSchools.length})` : `${DIV_CONFIG[d]?.label || d} (${divCounts[d] || 0})`}
+              </button>
+            ))}
+          </div>
+          <div className="relative flex-1 md:max-w-xs ml-auto">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
+            <input type="text" placeholder="Search programs, conferences…"
+              className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white border border-slate-200 text-sm font-medium outline-none focus:border-blue-400 shadow-sm"
+              value={search} onChange={e => setSearch(e.target.value)} />
+          </div>
+        </div>
+
+
+        {/* PRIMARY TARGETS TABLE */}
+        <section>
+          <div className="flex items-center gap-3 mb-4">
+            <Target className="text-blue-600 w-5 h-5" />
+            <h2 className="font-black text-slate-800 text-xl uppercase tracking-widest" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>
+              Primary Targets <span className="text-slate-400 font-normal">({filteredPrimary.length})</span>
+            </h2>
+          </div>
+          <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left">
+                <thead>
+                  <tr className="border-b border-slate-100" style={{ background: "#f8fafc" }}>
+                    {["Institution / Head Coach", "Division", "Conference", "Location", "Acceptance / Tuition", "Setter Need", "Status", ""].map((h, i) => (
+                      <th key={i} className="px-5 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest whitespace-nowrap">{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-50">
+                  {filteredPrimary.map(s => <SchoolRow key={s.id} s={s} />)}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        {/* DISCOVERY PHASE TABLE */}
+        <section>
+          <div className="flex items-center gap-3 mb-4">
+            <Compass className="text-indigo-500 w-5 h-5" />
+            <h2 className="font-black text-slate-700 text-xl uppercase tracking-widest" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>
+              Discovery Phase <span className="text-slate-400 font-normal">({filteredDiscovery.length})</span>
+            </h2>
+            <span className="text-[10px] bg-indigo-50 text-indigo-500 border border-indigo-100 rounded-full px-3 py-0.5 font-bold uppercase">Under Evaluation</span>
+          </div>
+          <div className="bg-white rounded-2xl shadow-sm border border-dashed border-slate-300 overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left">
+                <thead>
+                  <tr className="border-b border-slate-100" style={{ background: "#f8fafc" }}>
+                    {["Institution / Head Coach", "Division", "Conference", "Location", "Acceptance / Tuition", "Setter Need", "Status", ""].map((h, i) => (
+                      <th key={i} className="px-5 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest whitespace-nowrap">{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-50">
+                  {filteredDiscovery.map(s => <SchoolRow key={s.id} s={s} compact />)}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        {/* RECRUITING CALENDAR */}
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+          <div className="flex items-center gap-2 mb-5">
+            <Calendar className="text-blue-500 w-5 h-5" />
+            <h3 className="font-black text-slate-800 uppercase tracking-widest text-base" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>Recruiting Calendar — Class of 2028</h3>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {[
+              { when: "Now — 2027", what: "Contact coaches, fill questionnaires, attend camps/clinics. AZ Fear 17s visibility is key.", color: "border-blue-400 bg-blue-50", icon: "📬" },
+              { when: "June 15, 2026", what: "D-I coaches may now initiate contact with Parker (Sophomore year — critical window)", color: "border-amber-400 bg-amber-50", icon: "📞" },
+              { when: "Nov 2028", what: "Early National Signing Period (D-I only) opens — target offer by this date", color: "border-purple-400 bg-purple-50", icon: "✍️" },
+              { when: "Feb 2028", what: "National Signing Day — final letters of intent due", color: "border-emerald-400 bg-emerald-50", icon: "🏆" },
+            ].map((item, i) => (
+              <div key={i} className={`rounded-xl border-l-4 p-4 ${item.color}`}>
+                <div className="text-2xl mb-1">{item.icon}</div>
+                <div className="font-bold text-slate-800 text-sm mb-1">{item.when}</div>
+                <div className="text-slate-600 text-xs leading-relaxed">{item.what}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* HIDDEN SCHOOLS */}
+        {hiddenSchools.length > 0 && (
+          <section>
+            <button
+              onClick={() => setShowHidden(!showHidden)}
+              className="w-full flex items-center gap-3 p-4 bg-white border border-slate-200 rounded-2xl hover:bg-slate-50 transition-colors group"
+            >
+              <EyeOff className="w-4 h-4 text-slate-400" />
+              <h2 className="font-black text-slate-500 text-sm uppercase tracking-widest" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>
+                Hidden Schools <span className="text-slate-400 font-normal">({hiddenSchools.length})</span>
+              </h2>
+              <span className="text-[10px] bg-slate-100 text-slate-500 border border-slate-200 rounded-full px-2.5 py-0.5 font-bold uppercase">Archived</span>
+              <ChevronDown className={`w-4 h-4 text-slate-400 ml-auto transition-transform ${showHidden ? 'rotate-180' : ''}`} />
+            </button>
+            {showHidden && (
+              <div className="mt-3 bg-white rounded-2xl shadow-sm border border-dashed border-slate-300 overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left">
+                    <tbody className="divide-y divide-slate-50">
+                      {hiddenSchools.map(s => (
+                        <tr key={s.id} className="opacity-70 hover:opacity-100 transition-opacity">
+                          <td className="px-5 py-3">
+                            <div className="flex items-center gap-3">
+                              <SchoolLogo school={s} size="sm" />
+                              <div>
+                                <div className="flex items-center gap-2">
+                                  <span className="font-bold text-slate-600 text-xs">{s.name}</span>
+                                  <PriorityBadge priority={s.priority} />
+                                  <DivBadge divLevel={s.divLevel} />
+                                </div>
+                                <div className="text-[11px] text-slate-400">{s.city}, {s.state} · {s.conference || "—"}</div>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-5 py-3 text-right">
+                            <button
+                              onClick={() => unhideSchool(s.id)}
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-lg text-[10px] font-bold uppercase tracking-wide transition-colors"
+                            >
+                              <Eye className="w-3.5 h-3.5" />
+                              Restore
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+          </section>
+        )}
+
+      </div>
+    </div>
+  );
+
+  // ── DETAIL VIEW ──────────────────────────────────────────────────────────────
+  if (view === 'detail' && sel) {
+    const trend = getTrend(sel.winHistory);
+    const schoolNotes = notes[sel.id] || sel.notes || "";
+
+    return (
+      <div className="min-h-screen" style={{ background: "#f1f4f9" }}>
+        <FontStyle />
+
+        {/* HEADER */}
+        <div style={{ background: "linear-gradient(135deg, #0f172a, #1e3a5f)" }} className="px-8 py-6">
+          <div className="max-w-7xl mx-auto flex items-center justify-between gap-8">
+            <div>
+              <div className="flex items-center gap-3 mb-0.5">
+                <ShieldCheck className="text-blue-400 w-4 h-4" />
+                <span className="text-blue-300 text-xs font-bold uppercase tracking-widest">Parker Henderson · Brophy CP · AZ Fear 17s · Class of 2028</span>
+              </div>
+              <h1 className="font-black text-white text-3xl tracking-tight" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>
+                RECRUITING HUB <span className="text-slate-500">/ {sel.name.toUpperCase()}</span>
+              </h1>
+            </div>
+            <div className="flex items-center gap-3">
+              <button onClick={goGmail}
+                className="flex items-center gap-2 bg-emerald-600/80 hover:bg-emerald-500 border border-emerald-400/40 px-5 py-2.5 rounded-xl text-white text-xs font-bold uppercase tracking-wide transition-all">
+                <Send className="w-4 h-4" /> Gmail Drafts
+              </button>
+              <button onClick={() => goEmail(sel)}
+                className="flex items-center gap-2 bg-blue-600/80 hover:bg-blue-500 border border-blue-400/40 px-5 py-2.5 rounded-xl text-white text-xs font-bold uppercase tracking-wide transition-all">
+                <Mail className="w-4 h-4" /> Email Templates
+              </button>
+              <button onClick={goBack}
+                className="flex items-center gap-2 bg-white/10 hover:bg-white/20 border border-white/20 px-5 py-2.5 rounded-xl text-white text-xs font-bold uppercase tracking-wide transition-all">
+                <ArrowLeft className="w-4 h-4" /> Dashboard
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div className="max-w-7xl mx-auto px-6 sm:px-8 pb-20 pt-8">
+
+          {/* EXECUTIVE SUMMARY */}
           <ExecutiveSummary school={sel} />
 
-          {/* School identity */}
-          <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-6">
-            <div className="flex items-start gap-5">
+          {/* SCHOOL IDENTITY + PIPELINE */}
+          <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-8">
+            <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
               <SchoolLogo school={sel} size="lg" />
               <div className="flex-1">
-                <div className="flex items-center gap-2 mb-1 flex-wrap">
+                <div className="flex flex-wrap items-center gap-3 mb-1">
+                  <h2 className="font-black text-slate-900 text-3xl leading-none" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>{sel.name.toUpperCase()}</h2>
                   <DivBadge divLevel={sel.divLevel} size="lg" />
                   <PriorityBadge priority={sel.priority} />
                   {sel.programRank && sel.programRank !== "NR" && (
-                    <span className="inline-flex items-center gap-1 text-xs font-bold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-1 rounded-full">
+                    <span className="inline-flex items-center gap-1 px-3 py-1 bg-amber-50 border border-amber-200 rounded-full text-xs font-bold text-amber-700">
                       <Trophy className="w-3 h-3" /> AVCA {sel.programRank}
                     </span>
                   )}
                 </div>
-                <h1 className="font-black text-slate-900 text-4xl leading-none" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>{sel.name.toUpperCase()}</h1>
-                <div className="text-slate-500 text-sm mt-1 flex items-center gap-3 flex-wrap">
-                  <span className="flex items-center gap-1"><MapPin className="w-3 h-3" /> {sel.city}, {sel.state}</span>
-                  <span>·</span>
-                  <span>{sel.conference}</span>
-                  {sel.mascot && <><span>·</span><span>{sel.mascot}</span></>}
-                  {sel.url && <><span>·</span><a href={sel.url} target="_blank" rel="noreferrer" className="text-blue-600 hover:underline">Website ↗</a></>}
-                  {sel.vbUrl && <><span>·</span><a href={sel.vbUrl} target="_blank" rel="noreferrer" className="text-blue-600 hover:underline">MVB Page ↗</a></>}
-                  {sel.programIG && sel.programIG !== "#" && <><span>·</span><span className="text-slate-500 inline-flex items-center gap-1"><Instagram className="w-3 h-3" /> {sel.programIG}</span></>}
+                <div className="flex flex-wrap items-center gap-4 text-sm text-slate-500">
+                  <span className="flex items-center gap-1"><MapPin className="w-3.5 h-3.5" /> {sel.city}, {sel.state}</span>
+                  <span className="font-semibold text-slate-700">{sel.conference} Conference</span>
+                  <a href={sel.url} target="_blank" rel="noreferrer" className="text-blue-600 hover:underline">University Site ↗</a>
+                  {sel.vbUrl && sel.vbUrl !== "#" && <a href={sel.vbUrl} target="_blank" rel="noreferrer" className="text-blue-600 hover:underline">VB Program ↗</a>}
                 </div>
+              </div>
+              <div className="flex gap-4 flex-shrink-0">
+                {[
+                  { label: "Acceptance", value: sel.acceptance || "—" },
+                  { label: "Setter Need", value: sel.setterNeed || "—" },
+                  { label: "Trend", value: trend === "up" ? "↑ Up" : trend === "down" ? "↓ Down" : "→ Flat", color: trend === "up" ? "text-emerald-600" : trend === "down" ? "text-red-500" : "text-slate-500" },
+                ].map((item, i) => (
+                  <div key={i} className="text-center bg-slate-50 rounded-xl px-4 py-3 min-w-20">
+                    <div className={`font-black text-lg leading-none ${item.color || "text-slate-800"}`} style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>{item.value}</div>
+                    <div className="text-[10px] text-slate-400 uppercase tracking-wide mt-0.5">{item.label}</div>
+                  </div>
+                ))}
               </div>
             </div>
 
-            {/* Pipeline progress */}
-            <div className="mt-6 pt-5 border-t border-slate-100">
-              <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Recruiting Pipeline Status</div>
-              <div className="flex items-center gap-2">
-                {STATUSES.map((s, i) => {
-                  const active = i <= statusIdx;
-                  return (
-                    <div key={s.key} className="flex items-center gap-2 flex-1">
-                      <div className={`w-6 h-6 rounded-full flex items-center justify-center font-bold text-[10px] text-white flex-shrink-0 ${active ? '' : 'opacity-30'}`}
-                        style={{ backgroundColor: s.dot }}>{i + 1}</div>
-                      <span className={`text-[11px] font-semibold ${active ? 'text-slate-800' : 'text-slate-400'}`}>{s.label}</span>
-                      {i < STATUSES.length - 1 && <div className={`flex-1 h-[2px] ${active ? 'bg-slate-300' : 'bg-slate-100'}`} />}
-                    </div>
-                  );
-                })}
+            {/* RECRUITING PIPELINE */}
+            <div className="mt-6 pt-6 border-t border-slate-100">
+              <div className="flex items-center gap-2 mb-4">
+                <TrendingUp className="w-4 h-4 text-blue-500" />
+                <span className="font-bold text-slate-700 text-sm uppercase tracking-wide">My Recruiting Pipeline</span>
+                <span className="ml-auto"><StatusBadge statusKey={schoolStatus} /></span>
+              </div>
+              <div className="flex items-center gap-1">
+                {STATUSES.map((s, i) => (
+                  <React.Fragment key={s.key}>
+                    <button onClick={() => setStatuses(prev => ({ ...prev, [sel.id]: s.key }))}
+                      className={`flex-1 text-center py-2.5 rounded-lg text-[10px] font-bold uppercase tracking-wide transition-all border ${i <= statusIdx ? "border-blue-500 bg-blue-600 text-white shadow-md" : "border-slate-200 bg-white text-slate-400 hover:border-slate-300"}`}>
+                      {s.label}
+                    </button>
+                    {i < STATUSES.length - 1 && <div className={`w-4 h-0.5 flex-shrink-0 ${i < statusIdx ? "bg-blue-500" : "bg-slate-200"}`} />}
+                  </React.Fragment>
+                ))}
               </div>
             </div>
           </div>
 
-          {/* TWO COLUMN: Left (academic + roster) / Right (outreach + stats) */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* LEFT */}
-            <div className="space-y-6">
-              {/* Academic fit */}
+          {/* MAIN GRID */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+            {/* LEFT COLUMN */}
+            <div className="lg:col-span-4 space-y-6">
+
+              {/* Academic Profile */}
               <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-                <h3 className="flex items-center gap-2 font-black text-slate-800 uppercase tracking-widest mb-4 text-sm" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>
-                  <GraduationCap className="w-4 h-4 text-blue-600" /> Academic Fit
-                </h3>
-                <div className="grid grid-cols-2 gap-3 mb-4">
-                  <div className="bg-slate-50 rounded-xl p-3"><div className="text-[10px] text-slate-400 font-bold uppercase">Acceptance</div><div className="text-lg font-black text-slate-800">{sel.acceptance || "—"}</div></div>
-                  <div className="bg-slate-50 rounded-xl p-3"><div className="text-[10px] text-slate-400 font-bold uppercase">Avg GPA</div><div className="text-lg font-black text-slate-800">{sel.academic?.avgGPA || "—"}</div></div>
-                  <div className="bg-slate-50 rounded-xl p-3"><div className="text-[10px] text-slate-400 font-bold uppercase">Tuition (In)</div><div className="text-lg font-black text-slate-800">{sel.tuitionIn || "—"}</div></div>
-                  <div className="bg-slate-50 rounded-xl p-3"><div className="text-[10px] text-slate-400 font-bold uppercase">Grad Rate</div><div className="text-lg font-black text-slate-800">{sel.academic?.gradRate || "—"}</div></div>
+                <div className="flex items-center gap-2 mb-4">
+                  <GraduationCap className="w-4 h-4 text-blue-500" />
+                  <h3 className="font-black text-slate-800 text-base uppercase tracking-widest" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>Academic Fit</h3>
                 </div>
-                {sel.academic?.top10?.length > 0 && (
-                  <div>
-                    <div className="text-[10px] text-slate-400 font-bold uppercase mb-2">Top Majors</div>
+                <div className="grid grid-cols-2 gap-3 mb-4">
+                  <div className="bg-slate-50 rounded-xl p-3 text-center">
+                    <div className="font-black text-lg text-slate-800" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>{sel.academic?.avgGPA || "—"}</div>
+                    <div className="text-[10px] text-slate-400 uppercase">Avg Team GPA</div>
+                  </div>
+                  <div className="bg-slate-50 rounded-xl p-3 text-center">
+                    <div className="font-black text-lg text-slate-800" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>{sel.academic?.gradRate || "—"}</div>
+                    <div className="text-[10px] text-slate-400 uppercase">Grad Rate</div>
+                  </div>
+                </div>
+                {(sel.academic?.top10?.length > 0) && (
+                  <div className="mb-3">
+                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Top Programs</div>
                     <div className="flex flex-wrap gap-1.5">
                       {sel.academic.top10.map((m, i) => (
-                        <span key={i} className="text-[11px] bg-slate-100 text-slate-700 px-2 py-1 rounded-full font-semibold">{m}</span>
+                        <span key={i} className="px-2.5 py-1 bg-blue-50 text-blue-700 rounded-full text-[11px] font-semibold">{m}</span>
                       ))}
                     </div>
                   </div>
                 )}
-                <div className="mt-4 space-y-2 text-xs">
-                  {sel.academic?.business && <div className="flex gap-2"><Star className="w-3.5 h-3.5 text-blue-500 flex-shrink-0 mt-0.5" /><span className="text-slate-700"><strong>Business:</strong> {sel.academic.business}</span></div>}
-                  {sel.academic?.aviation && <div className="flex gap-2"><Plane className="w-3.5 h-3.5 text-sky-500 flex-shrink-0 mt-0.5" /><span className="text-slate-700"><strong>Aviation:</strong> {sel.academic.aviation}</span></div>}
-                  {sel.academic?.theology && <div className="flex gap-2"><Church className="w-3.5 h-3.5 text-purple-500 flex-shrink-0 mt-0.5" /><span className="text-slate-700"><strong>Theology:</strong> {sel.academic.theology}</span></div>}
+                <div className="space-y-2 text-xs">
+                  {[
+                    { label: "Business", value: sel.academic?.business, icon: "💼" },
+                    { label: "Aviation", value: sel.academic?.aviation, icon: "✈️" },
+                    { label: "Faith/Theology", value: sel.academic?.theology, icon: "✝️" },
+                  ].map(row => row.value && row.value !== "—" && row.value !== "N/A" ? (
+                    <div key={row.label} className="flex gap-2 p-2 bg-slate-50 rounded-lg">
+                      <span className="flex-shrink-0 text-sm">{row.icon}</span>
+                      <div>
+                        <div className="font-bold text-slate-600 text-[10px] uppercase tracking-wide">{row.label}</div>
+                        <div className="text-slate-700 text-xs">{row.value}</div>
+                      </div>
+                    </div>
+                  ) : null)}
                 </div>
               </div>
 
               {/* AZ Radar */}
-              {sel.azRadar?.length > 0 && (
+              {(sel.azRadar?.length > 0) && (
                 <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-                  <h3 className="flex items-center gap-2 font-black text-slate-800 uppercase tracking-widest mb-4 text-sm" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>
-                    🌵 Arizona Radar — {sel.azRadar.length} AZ player{sel.azRadar.length !== 1 ? 's' : ''}
-                  </h3>
+                  <div className="flex items-center gap-2 mb-4">
+                    <Zap className="w-4 h-4 text-orange-500" />
+                    <h3 className="font-black text-slate-800 text-base uppercase tracking-widest" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>AZ Radar</h3>
+                  </div>
                   <div className="space-y-2">
                     {sel.azRadar.map((p, i) => (
-                      <div key={i} className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl">
-                        <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 font-black text-sm">{p.pos || "?"}</div>
-                        <div><div className="font-bold text-sm text-slate-800">{p.name}</div><div className="text-[11px] text-slate-400">{p.hs}</div></div>
+                      <div key={i} className={`p-3 rounded-xl border-l-4 ${p.hs?.includes('Brophy') ? 'border-blue-600 bg-blue-50' : 'border-orange-400 bg-orange-50/50'}`}>
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="font-black text-slate-800 text-sm">{p.name}</span>
+                          <span className="text-[10px] bg-white border border-slate-200 px-2 py-0.5 rounded font-bold text-slate-600">{p.pos}</span>
+                        </div>
+                        <span className={`text-[11px] font-semibold ${p.hs?.includes('Brophy') ? 'text-blue-600' : 'text-orange-600'}`}>{p.hs}</span>
                       </div>
                     ))}
                   </div>
                 </div>
               )}
 
-              {/* Setter depth chart */}
-              {sel.setters?.length > 0 && (
+              {/* Setter Depth */}
+              {(sel.setters?.length > 0) && (
                 <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-                  <h3 className="flex items-center gap-2 font-black text-slate-800 uppercase tracking-widest mb-4 text-sm" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>
-                    <Users className="w-4 h-4 text-purple-600" /> Setter Depth Chart
-                  </h3>
+                  <div className="flex items-center gap-2 mb-4">
+                    <Users className="w-4 h-4 text-blue-500" />
+                    <h3 className="font-black text-slate-800 text-base uppercase tracking-widest" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>Setter Depth Chart</h3>
+                  </div>
                   <div className="space-y-2">
                     {sel.setters.map((s, i) => (
-                      <div key={i} className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl">
-                        <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 font-black text-xs">{s.class}</div>
-                        <div className="flex-1"><div className="font-bold text-sm text-slate-800">{s.name}</div><div className="text-[11px] text-slate-400">Class of {s.grad}</div></div>
-                        {parseInt(s.grad) <= 2028 && <span className="text-[10px] bg-amber-100 text-amber-700 font-bold px-2 py-1 rounded-full uppercase">Graduating</span>}
+                      <div key={i} className="p-3 bg-slate-50 rounded-xl flex items-center justify-between">
+                        <div>
+                          <span className="font-bold text-slate-800 text-sm">{s.name}</span>
+                          <span className="ml-2 text-[10px] text-slate-400 uppercase">{s.class || ""}</span>
+                        </div>
+                        <span className="text-[10px] bg-slate-200 text-slate-600 font-bold px-2.5 py-1 rounded-full">Grad {s.grad}</span>
                       </div>
                     ))}
+                  </div>
+                  <div className="mt-4 p-3 rounded-xl border border-dashed border-slate-300 bg-slate-50/50">
+                    <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-1">Class of 2028 Opening</div>
+                    <div className={`text-sm font-bold ${sel.setterNeed === 'High' ? 'text-rose-600' : sel.setterNeed === 'Med' ? 'text-amber-600' : 'text-slate-400'}`}>
+                      {sel.setterNeed === 'High' ? '🟢 Strong — multiple roster spots likely open' : sel.setterNeed === 'Med' ? '🟡 Moderate — 1 spot likely available' : '🔴 Limited — roster appears full through 2028'}
+                    </div>
                   </div>
                 </div>
               )}
 
-              {/* Notes */}
+              {/* Personal Notes */}
               <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-                <h3 className="flex items-center gap-2 font-black text-slate-800 uppercase tracking-widest mb-3 text-sm" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>
-                  <FileText className="w-4 h-4 text-slate-600" /> Notes
-                </h3>
-                <textarea value={notes[sel.id] ?? sel.notes ?? ''} onChange={e => setNotes(p => ({ ...p, [sel.id]: e.target.value }))}
-                  placeholder="Add notes about this program, coach interactions, campus visit impressions…"
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-700 outline-none focus:border-blue-400 focus:bg-white resize-none"
-                  style={{ minHeight: '120px' }} />
+                <div className="flex items-center gap-2 mb-3">
+                  <BookOpen className="w-4 h-4 text-slate-500" />
+                  <h3 className="font-black text-slate-800 text-base uppercase tracking-widest" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>My Notes</h3>
+                </div>
+                <textarea
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm text-slate-700 resize-none outline-none focus:border-blue-400 h-24"
+                  placeholder="Add personal notes about this program…"
+                  value={schoolNotes}
+                  onChange={e => setNotes(prev => ({ ...prev, [sel.id]: e.target.value }))}
+                />
               </div>
             </div>
 
-            {/* RIGHT */}
-            <div className="space-y-6">
-              {/* Outreach console */}
+            {/* RIGHT COLUMN */}
+            <div className="lg:col-span-8 space-y-6">
+
+              {/* Outreach Console */}
               <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-                <h3 className="flex items-center gap-2 font-black text-slate-800 uppercase tracking-widest mb-4 text-sm" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>
-                  <Mail className="w-4 h-4 text-blue-600" /> Outreach Console
-                </h3>
-
-                {/* Coaches */}
-                {sel.coaches?.length > 0 && (
-                  <div className="space-y-2 mb-5">
-                    {sel.coaches.map((c, i) => <CoachCard key={i} coach={c} schoolId={sel.id} />)}
+                <h3 className="font-black text-slate-800 text-base uppercase tracking-widest mb-5" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>Outreach Console</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  <div className="space-y-3">
+                    {sel.questionnaireUrl && sel.questionnaireUrl !== "#" && (
+                      <a href={sel.questionnaireUrl} target="_blank" rel="noreferrer"
+                        className="flex items-center justify-center gap-2 py-4 rounded-xl bg-blue-600 text-white text-sm font-bold uppercase tracking-wide hover:bg-blue-500 transition-all">
+                        Fill Questionnaire ↗
+                      </a>
+                    )}
+                    {sel.programIG && sel.programIG !== "#" && (
+                      <div className="flex items-center justify-between p-3.5 bg-slate-50 rounded-xl border border-slate-100">
+                        <div className="flex items-center gap-2">
+                          <Instagram className="w-4 h-4 text-pink-500" />
+                          <span className="text-xs font-bold text-slate-600 uppercase">Team IG</span>
+                        </div>
+                        <span className="text-sm font-bold text-slate-800">{sel.programIG}</span>
+                      </div>
+                    )}
+                    {sel.coaches?.map((c, i) => (
+                      <CoachCard key={i} coach={c} schoolId={sel.id} />
+                    ))}
                   </div>
-                )}
 
-                {/* Status picker */}
-                <div className="mb-4">
-                  <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Current Status</div>
-                  <select value={schoolStatus} onChange={e => setStatuses(p => ({ ...p, [sel.id]: e.target.value }))}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-700 outline-none focus:border-blue-400 focus:bg-white">
-                    {STATUSES.map(s => <option key={s.key} value={s.key}>{s.label}</option>)}
-                  </select>
-                </div>
-
-                {/* Log interaction */}
-                <div className="border-t border-slate-100 pt-4">
-                  <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Log Interaction</div>
-                  <div className="flex gap-2">
-                    <input type="date" value={logDate} onChange={e => setLogDate(e.target.value)}
-                      className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs outline-none focus:border-blue-400" />
-                    <select value={logType} onChange={e => setLogType(e.target.value)}
-                      className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs outline-none focus:border-blue-400">
+                  {/* Interaction Log */}
+                  <div className="bg-slate-900 rounded-2xl p-5 text-white">
+                    <div className="text-[10px] font-bold text-blue-400 uppercase tracking-widest mb-4">Interaction Log</div>
+                    <input type="date"
+                      className="w-full bg-slate-800 rounded-xl p-3 text-sm text-white mb-3 outline-none border border-slate-700 focus:border-blue-500"
+                      value={logDate} onChange={e => setLogDate(e.target.value)} />
+                    <select className="w-full bg-slate-800 rounded-xl p-3 text-sm text-white mb-3 outline-none border border-slate-700"
+                      value={logType} onChange={e => setLogType(e.target.value)}>
                       <option>Submitted Questionnaire</option>
                       <option>Email / DM Sent</option>
                       <option>Coach Responded</option>
                       <option>Phone / Video Call</option>
                       <option>Campus Visit</option>
                       <option>Verbal Offer</option>
+                      <option>Tournament — Coach Watched</option>
+                      <option>Camp / Clinic Attended</option>
                     </select>
-                    <button onClick={addLog} disabled={!logDate}
-                      className="bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white px-4 rounded-xl text-xs font-bold uppercase tracking-wide">Add</button>
-                  </div>
-
-                  {/* Log list */}
-                  {logs[sel.id]?.length > 0 && (
-                    <div className="mt-4 space-y-1.5 max-h-40 overflow-y-auto">
-                      {logs[sel.id].map((l, i) => (
-                        <div key={i} className="flex items-center justify-between text-xs bg-slate-50 rounded-lg px-3 py-2">
-                          <span className="font-semibold text-slate-600">{l.date}</span>
-                          <span className="text-slate-500">{l.type}</span>
+                    <button onClick={addLog}
+                      className="w-full py-3 bg-blue-600 rounded-xl font-bold text-sm uppercase tracking-wide hover:bg-blue-500 transition-all">
+                      Log + Update Status
+                    </button>
+                    <div className="mt-4 space-y-2 max-h-40 overflow-y-auto">
+                      {(logs[sel.id] || []).map((entry, i) => (
+                        <div key={i} className="flex justify-between text-[11px] text-slate-400 border-t border-slate-800 pt-2">
+                          <span className="font-semibold text-slate-300">{entry.type}</span>
+                          <span>{entry.date}</span>
                         </div>
                       ))}
+                      {!(logs[sel.id]?.length) && <p className="text-[11px] text-slate-600 italic">No interactions logged yet.</p>}
                     </div>
-                  )}
+                  </div>
                 </div>
               </div>
 
-              {/* Program stats */}
-              {sel.winHistory?.length > 0 && (
-                <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-                  <h3 className="flex items-center gap-2 font-black text-slate-800 uppercase tracking-widest mb-4 text-sm" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>
-                    <TrendingUp className={`w-4 h-4 ${trend === 'up' ? 'text-emerald-600' : trend === 'down' ? 'text-red-500' : 'text-slate-400'}`} />
-                    Historical Stability
-                    {trend && <span className={`text-[10px] font-bold uppercase ml-auto ${trend === 'up' ? 'text-emerald-600' : trend === 'down' ? 'text-red-500' : 'text-slate-400'}`}>{trend === 'up' ? '↗ Trending Up' : trend === 'down' ? '↘ Trending Down' : '→ Stable'}</span>}
-                  </h3>
-                  <div className="space-y-2">
-                    {sel.winHistory.map((y, i) => (
-                      <div key={i} className="flex items-center gap-3 text-xs">
-                        <span className="font-bold text-slate-600 w-12">{y.yr}</span>
-                        <div className="flex-1 bg-slate-100 rounded-full h-2 overflow-hidden">
-                          <div className="bg-blue-500 h-full rounded-full" style={{ width: `${parseFloat(y.p) * 100}%` }} />
-                        </div>
-                        <span className="font-mono text-slate-700 w-14 text-right">{y.w}-{y.l}</span>
-                        <span className="font-bold text-slate-800 w-10 text-right">{y.p}</span>
-                      </div>
-                    ))}
+              {/* Program Stats */}
+              <div className="grid grid-cols-2 gap-4">
+                {[
+                  { label: "Program Ranking", value: sel.programRank || "NR", sub: "AVCA Preseason", icon: <Trophy className="w-4 h-4 text-amber-500" /> },
+                  { label: "2025 Record", value: sel.winHistory?.[0] ? `${sel.winHistory[0].w}–${sel.winHistory[0].l}` : "N/A", sub: sel.winHistory?.[0]?.p ? `${sel.winHistory[0].p} win%` : "", icon: <TrendingUp className="w-4 h-4 text-emerald-500" /> },
+                ].map((item, i) => (
+                  <div key={i} className="bg-white rounded-xl shadow-sm border border-slate-200 p-4 text-center">
+                    <div className="flex justify-center mb-2">{item.icon}</div>
+                    <div className="font-black text-2xl text-slate-800 leading-none" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>{item.value}</div>
+                    <div className="text-[10px] text-slate-500 uppercase tracking-wide mt-1">{item.label}</div>
+                    {item.sub && <div className="text-[10px] text-slate-400 mt-0.5">{item.sub}</div>}
                   </div>
-                </div>
-              )}
+                ))}
+              </div>
 
-              {/* Season schedule */}
+              {/* Season Schedule */}
               {sel.schedule26?.length > 0 && (
                 <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-                  <h3 className="flex items-center gap-2 font-black text-slate-800 uppercase tracking-widest mb-1 text-sm" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>
-                    <Calendar className="w-4 h-4 text-emerald-600" /> 2026 Season
-                  </h3>
-                  <div className="text-[11px] text-slate-400 mb-3">Record: <strong className="text-slate-700">{tally.w}-{tally.l}</strong> · {sel.schedule26.length} matches</div>
-                  <div className="space-y-1 max-h-96 overflow-y-auto">
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="font-black text-slate-800 text-base uppercase tracking-widest" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>2026 Season Schedule</h3>
+                    <div className="flex items-center gap-2">
+                      <span className="px-3 py-1.5 bg-green-50 text-green-700 border border-green-200 rounded-lg text-xs font-bold">W {getRecordTally(sel.schedule26).w}</span>
+                      <span className="text-slate-300 font-bold">–</span>
+                      <span className="px-3 py-1.5 bg-red-50 text-red-700 border border-red-200 rounded-lg text-xs font-bold">L {getRecordTally(sel.schedule26).l}</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-4 mb-4 text-[10px] text-slate-400 font-semibold uppercase tracking-wide">
+                    <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-blue-400 inline-block" /> Home</span>
+                    <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-slate-300 inline-block" /> Away</span>
+                    <span className="flex items-center gap-1"><span className="px-1.5 py-0.5 bg-indigo-50 text-indigo-500 rounded font-bold text-[9px]">CONF</span> Conference</span>
+                    <span className="flex items-center gap-1"><span className="px-1.5 py-0.5 bg-amber-50 text-amber-500 rounded font-bold text-[9px]">POST</span> Postseason</span>
+                  </div>
+                  <div className="space-y-1.5 max-h-[32rem] overflow-y-auto pr-1">
                     {sel.schedule26.map((g, i) => {
+                      const isUpcoming = g.r === 'Upcoming';
                       const isWin = g.r?.startsWith('W');
                       const isLoss = g.r?.startsWith('L');
+                      const isConf = /MPSF|MIVA|PacWest|Big West|EIVA|GSAC|GLVC|PCAC|Cal Pac/i.test(g.o);
+                      const isPost = /tournament|championship|ncaa|final/i.test(g.o);
                       return (
-                        <div key={i} className={`flex items-center gap-2 text-[11px] px-3 py-1.5 rounded-lg ${isWin ? 'bg-emerald-50' : isLoss ? 'bg-red-50' : 'bg-slate-50'}`}>
-                          <span className="font-bold text-slate-600 w-14">{g.d}</span>
-                          <span className="flex-1 text-slate-700">{g.o}</span>
-                          <span className={`font-mono font-bold ${isWin ? 'text-emerald-700' : isLoss ? 'text-red-600' : 'text-slate-400'}`}>{g.r}</span>
+                        <div key={i} className={`flex items-center gap-3 px-4 py-2.5 rounded-xl border transition-all ${isUpcoming ? 'bg-slate-50/70 border-slate-100 opacity-60' : isWin ? 'bg-green-50/40 border-green-100' : isLoss ? 'bg-red-50/30 border-red-100' : 'bg-white border-slate-100'}`}>
+                          <div className={`w-2 h-2 rounded-full flex-shrink-0 ${g.home ? 'bg-blue-400' : 'bg-slate-300'}`} />
+                          <span className="text-[11px] font-bold text-slate-500 w-12 flex-shrink-0">{g.d}</span>
+                          <span className={`text-sm flex-1 font-semibold ${isUpcoming ? 'text-slate-500' : 'text-slate-800'}`}>{g.o}</span>
+                          {isPost && <span className="px-1.5 py-0.5 bg-amber-50 text-amber-600 border border-amber-200 rounded text-[9px] font-bold uppercase flex-shrink-0">Post</span>}
+                          {isConf && !isPost && <span className="px-1.5 py-0.5 bg-indigo-50 text-indigo-500 border border-indigo-200 rounded text-[9px] font-bold uppercase flex-shrink-0">Conf</span>}
+                          <span className={`text-xs font-black w-20 text-right flex-shrink-0 ${isUpcoming ? 'text-slate-300' : isWin ? 'text-green-600' : isLoss ? 'text-red-500' : 'text-slate-400'}`}>{g.r}</span>
                         </div>
                       );
                     })}
@@ -1752,23 +2035,53 @@ export default function App() {
                 </div>
               )}
 
-              {/* News */}
-              {sel.news?.length > 0 && (
+              {/* Historical Stability */}
+              {sel.winHistory?.length > 0 && (
                 <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-                  <h3 className="flex items-center gap-2 font-black text-slate-800 uppercase tracking-widest mb-4 text-sm" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>
-                    <BookOpen className="w-4 h-4 text-amber-600" /> Recent News
-                  </h3>
+                  <h3 className="font-black text-slate-800 text-base uppercase tracking-widest mb-4" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>Historical Stability</h3>
+                  <table className="w-full text-left">
+                    <thead>
+                      <tr className="border-b border-slate-100 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                        <th className="pb-3 pr-4">Year</th><th className="pb-3 pr-4">W</th><th className="pb-3 pr-4">L</th><th className="pb-3">Win %</th><th className="pb-3">Trend</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-50">
+                      {sel.winHistory.map((h, i) => {
+                        const prev = sel.winHistory[i + 1];
+                        const t = prev ? (parseFloat(h.p) > parseFloat(prev.p) ? "↑" : parseFloat(h.p) < parseFloat(prev.p) ? "↓" : "→") : "—";
+                        const tc = t === "↑" ? "text-emerald-500" : t === "↓" ? "text-red-400" : "text-slate-300";
+                        return (
+                          <tr key={i}>
+                            <td className="py-2.5 pr-4 font-bold text-slate-700">{h.yr}</td>
+                            <td className="py-2.5 pr-4 text-emerald-600 font-bold">{h.w}</td>
+                            <td className="py-2.5 pr-4 text-red-500 font-bold">{h.l}</td>
+                            <td className="py-2.5 font-semibold text-slate-600">{h.p}</td>
+                            <td className={`py-2.5 font-bold text-lg ${tc}`}>{t}</td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+
+              {/* News */}
+              {(sel.news?.length > 0) && (
+                <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+                  <h3 className="font-black text-slate-800 text-base uppercase tracking-widest mb-4" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>Program News</h3>
                   <div className="space-y-3">
                     {sel.news.map((n, i) => (
-                      <a key={i} href={n.url || "#"} target="_blank" rel="noreferrer" className="block p-3 bg-slate-50 hover:bg-blue-50 rounded-xl transition-colors">
-                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">{n.date}</div>
-                        <div className="text-sm font-bold text-slate-800 mb-1">{n.title}</div>
-                        <div className="text-xs text-slate-600 leading-snug">{n.body}</div>
+                      <a key={i} href={n.url} target="_blank" rel="noreferrer"
+                        className="block p-4 bg-slate-50 rounded-xl hover:bg-blue-50 border border-transparent hover:border-blue-100 transition-all group">
+                        <div className="text-[10px] font-bold text-blue-500 uppercase tracking-wide mb-1">{n.date}</div>
+                        <div className="font-bold text-slate-800 text-sm group-hover:text-blue-600">{n.title}</div>
+                        <div className="text-xs text-slate-500 mt-1 leading-relaxed">{n.body}</div>
                       </a>
                     ))}
                   </div>
                 </div>
               )}
+
             </div>
           </div>
         </div>
@@ -1776,172 +2089,16 @@ export default function App() {
     );
   }
 
-  // ── MASTER VIEW (DASHBOARD) ────────────────────────────────────────────────
-  return (
-    <div className="min-h-screen" style={{ background: "#f1f4f9" }}>
-      <FontStyle />
 
-      {/* HEADER */}
-      <div style={{ background: "linear-gradient(135deg, #0f172a, #1e3a5f)" }} className="px-8 py-7">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex items-center justify-between gap-6 mb-5">
-            <div>
-              <div className="flex items-center gap-3 mb-1">
-                <ShieldCheck className="text-blue-400 w-4 h-4" />
-                <span className="text-blue-300 text-xs font-bold uppercase tracking-widest">{PARKER.name} · Brophy CP '{String(PARKER.grad).slice(-2)} · {PARKER.club} · {PARKER.pos}</span>
-              </div>
-              <h1 className="font-black text-white text-4xl tracking-tight leading-none" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>
-                RECRUITING <span className="text-blue-400">HUB</span>
-              </h1>
-              <div className="text-blue-200 text-xs mt-1">Business · Aviation · Theology · Class of {PARKER.grad}</div>
-            </div>
-            <div className="flex gap-3">
-              <button onClick={() => goEmail(null)} className="flex items-center gap-2 bg-white/10 hover:bg-white/20 border border-white/20 px-5 py-2.5 rounded-xl text-white text-xs font-bold uppercase tracking-wide transition-all">
-                <FileText className="w-4 h-4" /> Email Templates
-              </button>
-              <button onClick={goGmail} className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 px-5 py-2.5 rounded-xl text-white text-xs font-bold uppercase tracking-wide transition-all">
-                <Send className="w-4 h-4" /> Gmail Drafts
-              </button>
-            </div>
-          </div>
+  // ── GMAIL VIEW ───────────────────────────────────────────────────────────────
+  if (view === 'gmail') {
+    return <GmailDraftsView allSchools={allSchools} onBack={() => setView('master')} />;
+  }
 
-          {/* STATS */}
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-            <div className="bg-white/5 backdrop-blur border border-white/10 rounded-xl px-4 py-3">
-              <div className="text-[10px] font-bold text-blue-300 uppercase tracking-widest">Tracked</div>
-              <div className="text-3xl font-black text-white" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>{allSchools.length}</div>
-            </div>
-            <div className="bg-white/5 backdrop-blur border border-white/10 rounded-xl px-4 py-3">
-              <div className="text-[10px] font-bold text-blue-300 uppercase tracking-widest">Contacted</div>
-              <div className="text-3xl font-black text-white" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>{contacted}</div>
-            </div>
-            <div className="bg-white/5 backdrop-blur border border-white/10 rounded-xl px-4 py-3">
-              <div className="text-[10px] font-bold text-blue-300 uppercase tracking-widest">D-I</div>
-              <div className="text-3xl font-black text-white" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>{divCounts["DI"] || 0}</div>
-            </div>
-            <div className="bg-white/5 backdrop-blur border border-white/10 rounded-xl px-4 py-3">
-              <div className="text-[10px] font-bold text-blue-300 uppercase tracking-widest">D-II / NAIA</div>
-              <div className="text-3xl font-black text-white" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>{(divCounts["DII"] || 0) + (divCounts["NAIA"] || 0)}</div>
-            </div>
-            <div className="bg-white/5 backdrop-blur border border-white/10 rounded-xl px-4 py-3">
-              <div className="text-[10px] font-bold text-blue-300 uppercase tracking-widest">Discovery Added</div>
-              <div className="text-3xl font-black text-white" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>{extraSchools.length}</div>
-            </div>
-          </div>
-        </div>
-      </div>
+  // ── EMAIL VIEW ───────────────────────────────────────────────────────────────
+  if (view === 'email') {
+    return <EmailTemplatesView school={sel} onBack={() => sel ? setView('detail') : setView('master')} />;
+  }
 
-      <div className="max-w-7xl mx-auto px-6 pb-20 pt-6">
-        {/* SYNC BANNER (replaces the broken Google Drive banner) */}
-        <div className="mb-6">
-          <SyncBanner status={syncStatus} lastSync={lastSync} onExport={handleExport} onImport={handleImport} onRetry={handleRetrySync} />
-        </div>
-
-        {/* DISCOVERY ENGINE */}
-        <div className="mb-6 rounded-2xl border border-slate-200 overflow-hidden shadow-sm"
-          style={{ background: "linear-gradient(135deg, #0f2044 0%, #1e3a8a 100%)" }}>
-          <div className="px-6 py-5">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-9 h-9 rounded-xl bg-blue-500/20 flex items-center justify-center flex-shrink-0">
-                <Sparkles className="w-4 h-4 text-blue-300" />
-              </div>
-              <div>
-                <div className="text-[10px] font-bold text-blue-300 uppercase tracking-widest">AI-Powered Discovery Engine</div>
-                <div className="font-black text-white text-lg" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>RESEARCH ANY COLLEGE PROGRAM</div>
-              </div>
-            </div>
-            <div className="flex gap-3">
-              <input value={newSchoolName} onChange={e => setNewSchoolName(e.target.value)}
-                placeholder="e.g., Grand Canyon University, Stanford, BYU Men's Volleyball…"
-                onKeyDown={e => { if (e.key === 'Enter') handleAddSchool(); }}
-                className="flex-1 bg-white/10 backdrop-blur border border-white/20 rounded-xl px-4 py-3 text-sm text-white placeholder-blue-300/60 outline-none focus:border-blue-400 focus:bg-white/15" />
-              <button onClick={handleAddSchool} disabled={isSearching || !newSchoolName.trim()}
-                className="flex items-center gap-2 bg-blue-500 hover:bg-blue-400 disabled:opacity-50 disabled:cursor-not-allowed text-white px-6 py-3 rounded-xl font-bold text-sm uppercase tracking-wide transition-all">
-                {isSearching ? <Loader2 className="w-4 h-4 animate-spin" /> : <PlusCircle className="w-4 h-4" />}
-                {isSearching ? 'Researching…' : 'Add School'}
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* FILTER BAR */}
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 mb-6 flex items-center gap-3 flex-wrap">
-          <div className="flex items-center gap-2 flex-1 min-w-[250px]">
-            <Search className="w-4 h-4 text-slate-400" />
-            <input value={search} onChange={e => setSearch(e.target.value)}
-              placeholder="Search schools, cities, conferences…"
-              className="flex-1 bg-transparent outline-none text-sm text-slate-700 placeholder-slate-400" />
-          </div>
-          <div className="flex gap-1.5 items-center">
-            {['All', 'DI', 'DII', 'DIII', 'NAIA', 'JUCO'].map(d => (
-              <button key={d} onClick={() => setDivFilter(d)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wide transition-all ${divFilter === d ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}>
-                {d}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* PRIMARY TARGETS */}
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden mb-6">
-          <div className="px-6 py-4 border-b border-slate-100 flex items-center gap-3">
-            <Target className="w-5 h-5 text-blue-600" />
-            <h2 className="font-black text-slate-800 text-lg uppercase tracking-widest" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>Primary Targets</h2>
-            <span className="ml-auto text-xs font-bold text-slate-400 uppercase tracking-wide">{filteredPrimary.length} schools</span>
-          </div>
-          {filteredPrimary.length === 0 ? (
-            <div className="p-10 text-center text-slate-400 text-sm">No schools match your filters.</div>
-          ) : (
-            <table className="w-full">
-              <thead className="bg-slate-50 border-b border-slate-100">
-                <tr className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                  <th className="px-5 py-3 text-left">School</th>
-                  <th className="px-5 py-3 text-left">Div</th>
-                  <th className="px-5 py-3 text-left">Conference</th>
-                  <th className="px-5 py-3 text-left">Location</th>
-                  <th className="px-5 py-3 text-left">Admission</th>
-                  <th className="px-5 py-3 text-left">Setter</th>
-                  <th className="px-5 py-3 text-left">Status</th>
-                  <th className="px-5 py-3"></th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {filteredPrimary.map(s => <SchoolRow key={s.id} s={s} />)}
-              </tbody>
-            </table>
-          )}
-        </div>
-
-        {/* DISCOVERY PHASE */}
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-          <div className="px-6 py-4 border-b border-slate-100 flex items-center gap-3">
-            <Compass className="w-5 h-5 text-purple-600" />
-            <h2 className="font-black text-slate-800 text-lg uppercase tracking-widest" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>Discovery Phase</h2>
-            <span className="ml-auto text-xs font-bold text-slate-400 uppercase tracking-wide">{filteredDiscovery.length} schools</span>
-          </div>
-          {filteredDiscovery.length === 0 ? (
-            <div className="p-10 text-center text-slate-400 text-sm">No schools match your filters. Use the Discovery Engine above to add one.</div>
-          ) : (
-            <table className="w-full">
-              <thead className="bg-slate-50 border-b border-slate-100">
-                <tr className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                  <th className="px-5 py-3 text-left">School</th>
-                  <th className="px-5 py-3 text-left">Div</th>
-                  <th className="px-5 py-3 text-left">Conference</th>
-                  <th className="px-5 py-3 text-left">Location</th>
-                  <th className="px-5 py-3 text-left">Admission</th>
-                  <th className="px-5 py-3 text-left">Setter</th>
-                  <th className="px-5 py-3 text-left">Status</th>
-                  <th className="px-5 py-3"></th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {filteredDiscovery.map(s => <SchoolRow key={s.id} s={s} compact />)}
-              </tbody>
-            </table>
-          )}
-        </div>
-      </div>
-    </div>
-  );
+  return null;
 }
