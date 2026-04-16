@@ -260,3 +260,4 @@ export const GmailDraftsView = ({ allSchools, onBack }) => {
       </div>
     </div>
   );
+};
