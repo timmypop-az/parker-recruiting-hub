@@ -53,30 +53,327 @@
     position: absolute; inset: 0;
     z-index: 0;
     overflow: hidden;
-    background:
-      radial-gradient(ellipse 60% 50% at 80% 15%, rgba(240,180,41,0.14), transparent 70%),
-      radial-gradient(ellipse 55% 45% at 15% 85%, rgba(59,130,246,0.09), transparent 70%),
-      linear-gradient(180deg, #0a0e1a 0%, #060912 100%);
+    background: #060912;
   }
 
-  .hero-video-wrap::before {
-    content: '';
+  /* ─── Hero Slideshow (Ken Burns crossfade) ─── */
+  .hero-slide {
     position: absolute; inset: 0;
-    background-image:
-      linear-gradient(rgba(148,163,184,0.07) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(148,163,184,0.07) 1px, transparent 1px);
-    background-size: 70px 70px;
-    -webkit-mask-image: radial-gradient(ellipse at center, black 25%, transparent 75%);
-    mask-image: radial-gradient(ellipse at center, black 25%, transparent 75%);
+    opacity: 0;
+    transform-origin: center center;
+    animation: hero-kb 24s cubic-bezier(0.26, 0.54, 0.32, 1) infinite;
+    will-change: transform, opacity;
+  }
+  .hero-slide:nth-child(1) { animation-delay: 0s; }
+  .hero-slide:nth-child(2) { animation-delay: 6s; }
+  .hero-slide:nth-child(3) { animation-delay: 12s; }
+  .hero-slide:nth-child(4) { animation-delay: 18s; }
+
+  @keyframes hero-kb {
+    0%   { opacity: 0; transform: scale(1.18); }
+    5%   { opacity: 1; }
+    22%  { opacity: 1; transform: scale(1.02); }
+    27%  { opacity: 0; transform: scale(1); }
+    100% { opacity: 0; transform: scale(1); }
+  }
+
+  /* Each slide renders a stylized hub view */
+  .slide-frame {
+    position: absolute; inset: 0;
+    background: linear-gradient(160deg, #eef2f8 0%, #dfe5ef 100%);
+    display: flex;
+  }
+  .slide-sidebar {
+    width: 210px; flex-shrink: 0;
+    background: #0a0e1a;
+    padding: 1.5rem 1rem;
+    color: #fff;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .slide-sidebar-logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1rem; letter-spacing: 0.08em;
+    margin-bottom: 0.3rem;
+  }
+  .slide-sidebar-sub {
+    font-size: 0.65rem; color: #94a3b8;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    margin-bottom: 1.75rem;
+  }
+  .slide-sidebar-cta {
+    background: linear-gradient(135deg,#2563eb,#1d4ed8);
+    padding: 0.7rem 1rem;
+    border-radius: 6px;
+    font-size: 0.85rem; font-weight: 600;
+    margin-bottom: 1.25rem;
+  }
+  .slide-sidebar-nav {
+    font-size: 0.72rem; line-height: 2.1;
+    color: rgba(226,232,240,0.75);
+  }
+  .slide-sidebar-nav .active {
+    color: #fff; font-weight: 600;
+    background: rgba(59,130,246,0.15);
+    padding: 0.35rem 0.6rem;
+    border-radius: 5px;
+    display: inline-block;
+  }
+  .slide-main {
+    flex: 1; padding: 2rem 2.5rem;
+    overflow: hidden;
+    font-family: 'DM Sans', sans-serif;
+    color: #0f172a;
+  }
+  .slide-crumb {
+    font-size: 0.68rem; color: #64748b;
+    letter-spacing: 0.14em; text-transform: uppercase;
+    margin-bottom: 0.4rem;
+  }
+  .slide-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2.4rem; color: #0f172a;
+    letter-spacing: 0.02em; line-height: 1;
+    margin-bottom: 0.4rem;
+  }
+  .slide-title span { color: #64748b; font-weight: 400; }
+  .slide-subtitle { font-size: 0.82rem; color: #64748b; margin-bottom: 1.5rem; }
+
+  .slide-stat-row { display: flex; gap: 0.75rem; margin-bottom: 1.5rem; }
+  .slide-stat {
+    flex: 1; background: #fff; border: 1px solid #e2e8f0;
+    border-radius: 10px; padding: 0.85rem 1rem;
+    box-shadow: 0 2px 4px rgba(15,23,42,0.04);
+  }
+  .slide-stat-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.8rem; line-height: 1; color: #0f172a;
+  }
+  .slide-stat-label {
+    font-size: 0.6rem; letter-spacing: 0.12em;
+    text-transform: uppercase; color: #64748b;
+    margin-top: 0.15rem;
+  }
+  .slide-stat.accent .slide-stat-num { color: #2563eb; }
+  .slide-stat.accent2 .slide-stat-num { color: #7c3aed; }
+  .slide-stat.accent3 .slide-stat-num { color: #10b981; }
+
+  .slide-tabs { display: flex; gap: 1.25rem; margin-bottom: 1rem; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.5rem; }
+  .slide-tab { font-size: 0.78rem; color: #64748b; padding-bottom: 0.4rem; }
+  .slide-tab.active { color: #2563eb; font-weight: 600; border-bottom: 2px solid #2563eb; margin-bottom: -0.55rem; padding-bottom: 0.45rem; }
+  .slide-tab .count { background: #dbeafe; color: #2563eb; padding: 0.05rem 0.45rem; border-radius: 10px; font-size: 0.65rem; margin-left: 0.35rem; }
+
+  .slide-row {
+    display: grid; grid-template-columns: 2.5fr 0.7fr 1fr 1.2fr 1fr 1fr 0.6fr;
+    gap: 1rem; padding: 0.85rem 1rem;
+    background: #fff; border: 1px solid #e2e8f0;
+    border-radius: 8px; margin-bottom: 0.4rem;
+    align-items: center;
+    font-size: 0.75rem;
+  }
+  .slide-row-logo {
+    width: 30px; height: 30px; border-radius: 5px;
+    background: linear-gradient(135deg,#dc2626,#991b1b);
+    display: inline-block; vertical-align: middle; margin-right: 0.6rem;
+  }
+  .slide-row-school { font-weight: 700; color: #0f172a; font-size: 0.85rem; }
+  .slide-row-meta { font-size: 0.65rem; color: #64748b; margin-top: 0.1rem; }
+  .slide-pill {
+    display: inline-block;
+    font-size: 0.58rem; font-weight: 700; letter-spacing: 0.08em;
+    padding: 0.15rem 0.45rem; border-radius: 4px;
+    text-transform: uppercase;
+  }
+  .pill-di { background: #dbeafe; color: #1e40af; }
+  .pill-target { background: #fef3c7; color: #92400e; }
+  .pill-reach { background: #ede9fe; color: #6d28d9; }
+  .pill-high { background: #fecaca; color: #991b1b; }
+  .pill-med { background: #fde68a; color: #78350f; }
+  .pill-low { background: #fef9c3; color: #854d0e; }
+  .pill-notstarted { background: #f1f5f9; color: #475569; }
+
+  /* ── USC Profile slide ── */
+  .slide-profile-banner {
+    background: linear-gradient(135deg,#1d4ed8 0%, #2563eb 50%, #1e3a8a 100%);
+    border-radius: 14px;
+    padding: 1.5rem 2rem;
+    color: #fff; margin-bottom: 1.25rem;
+    box-shadow: 0 6px 18px rgba(30,58,138,0.25);
+  }
+  .slide-profile-eyebrow {
+    font-size: 0.65rem; letter-spacing: 0.15em;
+    text-transform: uppercase; opacity: 0.85;
+    margin-bottom: 0.35rem;
+  }
+  .slide-profile-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.75rem; letter-spacing: 0.02em;
+    line-height: 1; margin-bottom: 0.75rem;
+  }
+  .slide-profile-copy { font-size: 0.78rem; line-height: 1.55; opacity: 0.92; margin-bottom: 0.9rem; }
+  .slide-profile-tags { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+  .slide-profile-tag {
+    background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2);
+    padding: 0.3rem 0.65rem; border-radius: 16px;
+    font-size: 0.68rem; font-weight: 600;
+  }
+  .slide-profile-card {
+    background: #fff; border: 1px solid #e2e8f0;
+    border-radius: 12px; padding: 1.1rem 1.5rem;
+    display: flex; align-items: center; gap: 1.25rem;
+    box-shadow: 0 2px 6px rgba(15,23,42,0.04);
+  }
+  .slide-school-badge {
+    width: 64px; height: 64px; border-radius: 10px;
+    background: linear-gradient(135deg,#990000 0%, #f0b429 100%);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-weight: 900; font-size: 0.88rem;
+    letter-spacing: 0.03em;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+  }
+  .slide-school-info { flex: 1; }
+  .slide-school-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.5rem; color: #0f172a; line-height: 1;
+  }
+  .slide-school-loc {
+    font-size: 0.75rem; color: #64748b; margin-top: 0.3rem;
+  }
+  .slide-school-stats { display: flex; gap: 1.5rem; }
+  .slide-school-stat .num { font-family: 'Bebas Neue', sans-serif; font-size: 1.4rem; color: #0f172a; line-height: 1; }
+  .slide-school-stat .num.green { color: #10b981; }
+  .slide-school-stat .num.gold { color: #f59e0b; }
+  .slide-school-stat .lab { font-size: 0.58rem; letter-spacing: 0.12em; text-transform: uppercase; color: #64748b; margin-top: 0.25rem; }
+
+  /* Pipeline bar */
+  .slide-pipeline {
+    display: grid; grid-template-columns: repeat(6, 1fr); gap: 0.6rem;
+    margin-top: 1.25rem;
+  }
+  .slide-pipeline-step {
+    background: #fff; border: 1px solid #e2e8f0;
+    border-radius: 8px; padding: 0.7rem 0.5rem; text-align: center;
+    font-size: 0.65rem; color: #64748b; font-weight: 600;
+    letter-spacing: 0.04em;
+  }
+  .slide-pipeline-step .step-num {
+    background: #f1f5f9; color: #64748b;
+    width: 22px; height: 22px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Bebas Neue', sans-serif; font-size: 0.8rem;
+    margin: 0 auto 0.3rem;
+  }
+  .slide-pipeline-step.active { background: linear-gradient(135deg,#2563eb,#1d4ed8); color: #fff; border-color: #2563eb; box-shadow: 0 4px 10px rgba(37,99,235,0.3); }
+  .slide-pipeline-step.active .step-num { background: rgba(255,255,255,0.2); color: #fff; }
+
+  /* Coach card slide */
+  .slide-coach-row {
+    display: grid; grid-template-columns: 1fr 1.2fr; gap: 1rem;
+    margin-top: 0.5rem;
+  }
+  .slide-card {
+    background: #fff; border: 1px solid #e2e8f0;
+    border-radius: 12px; padding: 1.25rem;
+    box-shadow: 0 2px 6px rgba(15,23,42,0.04);
+  }
+  .slide-card-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1rem; letter-spacing: 0.06em;
+    color: #0f172a; margin-bottom: 0.85rem;
+    display: flex; align-items: center; gap: 0.45rem;
+  }
+  .slide-academic-row { display: flex; gap: 0.6rem; margin-bottom: 0.8rem; }
+  .slide-academic-stat {
+    background: linear-gradient(135deg,#eff6ff,#dbeafe);
+    border-radius: 8px; padding: 0.65rem 0.9rem; flex: 1;
+  }
+  .slide-academic-stat .v { font-family: 'Bebas Neue', sans-serif; font-size: 1.5rem; color: #1e40af; line-height: 1; }
+  .slide-academic-stat .l { font-size: 0.55rem; letter-spacing: 0.1em; text-transform: uppercase; color: #64748b; margin-top: 0.15rem; }
+  .slide-academic-tags { display: flex; flex-wrap: wrap; gap: 0.3rem; }
+  .slide-academic-tag {
+    background: #f1f5f9; color: #334155;
+    border-radius: 4px; padding: 0.2rem 0.5rem;
+    font-size: 0.65rem; font-weight: 600;
+  }
+  .slide-coach-box {
+    display: flex; gap: 1rem; align-items: center;
+    padding: 0.75rem; background: #f8fafc;
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
+  }
+  .slide-coach-portrait {
+    width: 72px; height: 88px; border-radius: 8px;
+    background: linear-gradient(160deg,#475569 0%, #1e293b 60%, #f0b429 120%);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.3rem; letter-spacing: 0.04em;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15), inset 0 0 0 1px rgba(240,180,41,0.35);
+    position: relative; overflow: hidden;
+    flex-shrink: 0;
+  }
+  .slide-coach-portrait::after {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 35% 30%, rgba(255,255,255,0.25), transparent 55%);
+  }
+  .slide-coach-info { flex: 1; }
+  .slide-coach-name { font-weight: 700; color: #0f172a; font-size: 0.95rem; }
+  .slide-coach-role { font-size: 0.62rem; letter-spacing: 0.1em; text-transform: uppercase; color: #f59e0b; font-weight: 700; margin: 0.2rem 0 0.4rem; }
+  .slide-coach-email { font-size: 0.72rem; color: #2563eb; font-weight: 500; }
+  .slide-coach-badge {
+    background: #fef3c7; color: #92400e;
+    padding: 0.2rem 0.5rem; border-radius: 5px;
+    font-size: 0.58rem; letter-spacing: 0.1em;
+    text-transform: uppercase; font-weight: 700;
+  }
+
+  /* Outreach / Gmail slide */
+  .slide-outreach-row { display: grid; grid-template-columns: 1fr 1.1fr; gap: 1rem; }
+  .slide-outreach-btn {
+    background: linear-gradient(135deg,#2563eb,#1d4ed8);
+    color: #fff; padding: 1rem 1.25rem;
+    border-radius: 10px; font-weight: 700;
+    font-size: 0.95rem; letter-spacing: 0.04em;
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 0.75rem;
+    box-shadow: 0 4px 12px rgba(37,99,235,0.35);
+  }
+  .slide-mini-row {
+    display: flex; align-items: center; gap: 0.5rem;
+    padding: 0.6rem 0.75rem; background: #fff;
+    border: 1px solid #e2e8f0; border-radius: 8px;
+    margin-bottom: 0.4rem; font-size: 0.72rem;
+  }
+  .slide-mini-row .lbl { color: #64748b; flex: 1; font-weight: 600; }
+  .slide-mini-row .val { color: #0f172a; font-weight: 700; }
+  .slide-draft-box {
+    background: #fff; border: 1px solid #e2e8f0;
+    border-radius: 10px; padding: 1rem;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem; color: #334155;
+    line-height: 1.6;
+  }
+  .slide-draft-box .to { color: #2563eb; font-weight: 600; }
+  .slide-draft-box .subj { color: #0f172a; font-weight: 700; margin: 0.5rem 0; font-family: 'DM Sans', sans-serif; font-size: 0.82rem; }
+
+  /* Responsive: on mobile, hide sidebars */
+  @media (max-width: 768px) {
+    .slide-sidebar { display: none; }
+    .slide-main { padding: 1.5rem; }
+    .slide-stat-row { gap: 0.4rem; }
+    .slide-stat { padding: 0.6rem 0.7rem; }
+    .slide-stat-num { font-size: 1.4rem; }
+    .slide-row { grid-template-columns: 1fr 0.5fr; gap: 0.5rem; padding: 0.6rem 0.8rem; }
+    .slide-row > *:nth-child(n+3) { display: none; }
+    .slide-pipeline { grid-template-columns: repeat(3, 1fr); }
+    .slide-coach-row, .slide-outreach-row { grid-template-columns: 1fr; }
   }
 
   .hero-overlay {
     position: absolute; inset: 0;
     background: linear-gradient(
       to bottom,
-      rgba(6,9,18,0.25) 0%,
-      rgba(6,9,18,0.10) 40%,
-      rgba(6,9,18,0.65) 85%,
+      rgba(6,9,18,0.75) 0%,
+      rgba(6,9,18,0.55) 40%,
+      rgba(6,9,18,0.80) 85%,
       rgba(6,9,18,1.00) 100%
     );
     z-index: 1;
@@ -692,7 +989,228 @@
 
 <!-- ═══════════ HERO ═══════════ -->
 <section class="hero">
-  <div class="hero-video-wrap" aria-hidden="true"></div>
+  <div class="hero-video-wrap" aria-hidden="true">
+
+    <!-- SLIDE 1 — Schools Dashboard -->
+    <div class="hero-slide">
+      <div class="slide-frame">
+        <div class="slide-sidebar">
+          <div class="slide-sidebar-logo">RECRUITING HUB</div>
+          <div class="slide-sidebar-sub">Men's Volleyball</div>
+          <div class="slide-sidebar-cta">✦ Discover a Program</div>
+          <div class="slide-sidebar-nav">
+            <div class="active">▦ Schools</div>
+            <div>✉ Email Templates</div>
+            <div>▸ Gmail Drafts</div>
+            <div>⚙ Settings</div>
+          </div>
+        </div>
+        <div class="slide-main">
+          <div class="slide-crumb">● Brophy College Prep · AZ Fear 17s · Class of 2028</div>
+          <div class="slide-title">SCHOOLS <span>/ Program Pipeline</span></div>
+          <div class="slide-subtitle">25 programs tracked · Men's Volleyball · Setter</div>
+          <div class="slide-stat-row">
+            <div class="slide-stat"><div class="slide-stat-num">25</div><div class="slide-stat-label">Total Programs</div></div>
+            <div class="slide-stat accent"><div class="slide-stat-num">17</div><div class="slide-stat-label">D-I</div></div>
+            <div class="slide-stat accent2"><div class="slide-stat-num">7</div><div class="slide-stat-label">D-II / NAIA</div></div>
+            <div class="slide-stat"><div class="slide-stat-num">1</div><div class="slide-stat-label">D-III / JUCO</div></div>
+            <div class="slide-stat accent3"><div class="slide-stat-num">0</div><div class="slide-stat-label">Contacted</div></div>
+          </div>
+          <div class="slide-tabs">
+            <div class="slide-tab active">◎ Primary Targets<span class="count">14</span></div>
+            <div class="slide-tab">✦ Discovery<span class="count">10</span></div>
+            <div class="slide-tab">◌ Hidden<span class="count">1</span></div>
+          </div>
+          <div class="slide-row">
+            <div><span class="slide-row-logo" style="background:linear-gradient(135deg,#dc2626,#991b1b);"></span><span class="slide-row-school">Ball State</span><span class="slide-pill pill-reach" style="margin-left:0.5rem;">Reach</span><div class="slide-row-meta">Cardinals · Mike Iandolo</div></div>
+            <div><span class="slide-pill pill-di">D-I</span></div>
+            <div>MIVA</div>
+            <div>Muncie, IN</div>
+            <div>69% · $10,500</div>
+            <div><span class="slide-pill pill-med">Med Need</span></div>
+            <div><span class="slide-pill pill-notstarted">Not Started</span></div>
+          </div>
+          <div class="slide-row">
+            <div><span class="slide-row-logo" style="background:linear-gradient(135deg,#1e3a8a,#0c4a6e);"></span><span class="slide-row-school">Concordia Irvine</span><span class="slide-pill pill-target" style="margin-left:0.5rem;">Target</span><div class="slide-row-meta">Golden Eagles · Jon Girten</div></div>
+            <div><span class="slide-pill pill-di">D-I</span></div>
+            <div>MPSF</div>
+            <div>Irvine, CA</div>
+            <div>78% · $41,200</div>
+            <div><span class="slide-pill pill-high">High Need</span></div>
+            <div><span class="slide-pill pill-notstarted">Not Started</span></div>
+          </div>
+          <div class="slide-row">
+            <div><span class="slide-row-logo" style="background:linear-gradient(135deg,#b91c1c,#7f1d1d);"></span><span class="slide-row-school">CSUN</span><span class="slide-pill pill-target" style="margin-left:0.5rem;">Target</span><div class="slide-row-meta">Matadors · Theo Edwards</div></div>
+            <div><span class="slide-pill pill-di">D-I</span></div>
+            <div>Big West</div>
+            <div>Northridge, CA</div>
+            <div>73% · $7,100</div>
+            <div><span class="slide-pill pill-med">Med Need</span></div>
+            <div><span class="slide-pill pill-notstarted">Not Started</span></div>
+          </div>
+          <div class="slide-row">
+            <div><span class="slide-row-logo" style="background:linear-gradient(135deg,#06b6d4,#0e7490);"></span><span class="slide-row-school">Jessup University</span><span class="slide-pill pill-target" style="margin-left:0.5rem;">Target</span><div class="slide-row-meta">Warriors · Kyle Steele</div></div>
+            <div><span class="slide-pill pill-di">D-II</span></div>
+            <div>PacWest</div>
+            <div>Rocklin, CA</div>
+            <div>65% · $37,000</div>
+            <div><span class="slide-pill pill-med">Med Need</span></div>
+            <div><span class="slide-pill pill-notstarted">Not Started</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 2 — USC Profile Hero -->
+    <div class="hero-slide">
+      <div class="slide-frame">
+        <div class="slide-sidebar">
+          <div class="slide-sidebar-logo">RECRUITING HUB</div>
+          <div class="slide-sidebar-sub">Men's Volleyball</div>
+          <div class="slide-sidebar-cta">✦ Discover a Program</div>
+          <div class="slide-sidebar-nav">
+            <div class="active">▦ Schools</div>
+            <div>✉ Email Templates</div>
+            <div>▸ Gmail Drafts</div>
+            <div>⚙ Settings</div>
+          </div>
+        </div>
+        <div class="slide-main">
+          <div class="slide-crumb">← Back to Schools</div>
+          <div class="slide-profile-banner">
+            <div class="slide-profile-eyebrow">◆ Parker Henderson · Brophy CP '29 · AZ Fear 17s · Setter</div>
+            <div class="slide-profile-title">WHY USC IS A FIT</div>
+            <div class="slide-profile-copy">USC Marshall is one of the top business schools in the country. Viterbi's aerospace engineering and LAX proximity serve aviation interests. At 12% acceptance this is a hard Reach but worth a questionnaire. Setter need is LOW — roster appears full through 2028.</div>
+            <div class="slide-profile-tags">
+              <span class="slide-profile-tag">★ Business</span>
+              <span class="slide-profile-tag">✈ Aviation</span>
+              <span class="slide-profile-tag">✦ Theology —</span>
+            </div>
+          </div>
+          <div class="slide-profile-card">
+            <div class="slide-school-badge">USC</div>
+            <div class="slide-school-info">
+              <div class="slide-school-name">USC <span style="font-size:0.7rem; color:#64748b; font-weight:normal; vertical-align:middle; margin-left:0.5rem;">D-I · MPSF · Los Angeles, CA</span></div>
+              <div style="display:flex; gap:0.4rem; margin-top:0.4rem;">
+                <span class="slide-pill pill-reach">Reach</span>
+                <span class="slide-pill pill-target">AVCA #4</span>
+              </div>
+            </div>
+            <div class="slide-school-stats">
+              <div class="slide-school-stat"><div class="num">12%</div><div class="lab">Acceptance</div></div>
+              <div class="slide-school-stat"><div class="num gold">Low</div><div class="lab">Setter Need</div></div>
+              <div class="slide-school-stat"><div class="num green">↑ Up</div><div class="lab">Trend</div></div>
+            </div>
+          </div>
+          <div class="slide-pipeline">
+            <div class="slide-pipeline-step active"><div class="step-num">1</div>Not Started</div>
+            <div class="slide-pipeline-step"><div class="step-num">2</div>Submitted Q</div>
+            <div class="slide-pipeline-step"><div class="step-num">3</div>Reached Out</div>
+            <div class="slide-pipeline-step"><div class="step-num">4</div>Coach Contact</div>
+            <div class="slide-pipeline-step"><div class="step-num">5</div>Campus Visit</div>
+            <div class="slide-pipeline-step"><div class="step-num">6</div>Offer</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 3 — Coach Contact + Academic Fit -->
+    <div class="hero-slide">
+      <div class="slide-frame">
+        <div class="slide-sidebar">
+          <div class="slide-sidebar-logo">RECRUITING HUB</div>
+          <div class="slide-sidebar-sub">Men's Volleyball</div>
+          <div class="slide-sidebar-cta">✦ Discover a Program</div>
+          <div class="slide-sidebar-nav">
+            <div class="active">▦ Schools</div>
+            <div>✉ Email Templates</div>
+            <div>▸ Gmail Drafts</div>
+            <div>⚙ Settings</div>
+          </div>
+        </div>
+        <div class="slide-main">
+          <div class="slide-crumb">USC · Head Coach Contact</div>
+          <div class="slide-title" style="font-size:2rem;">COACH CONTACT <span>/ Verified</span></div>
+          <div class="slide-subtitle">Direct contact · Updated Feb 2026</div>
+          <div class="slide-coach-row">
+            <div class="slide-card">
+              <div class="slide-card-title">🎓 Academic Fit</div>
+              <div class="slide-academic-row">
+                <div class="slide-academic-stat"><div class="v">3.9</div><div class="l">Avg Team GPA</div></div>
+                <div class="slide-academic-stat"><div class="v">92%</div><div class="l">Grad Rate</div></div>
+              </div>
+              <div style="font-size:0.62rem; letter-spacing:0.1em; text-transform:uppercase; color:#64748b; margin-bottom:0.4rem;">Top Programs</div>
+              <div class="slide-academic-tags">
+                <span class="slide-academic-tag">Business</span>
+                <span class="slide-academic-tag">Comp Sci</span>
+                <span class="slide-academic-tag">Finance</span>
+                <span class="slide-academic-tag">Engineering</span>
+                <span class="slide-academic-tag">Int'l Relations</span>
+              </div>
+            </div>
+            <div class="slide-card">
+              <div class="slide-card-title">👤 Head Coach</div>
+              <div class="slide-coach-box">
+                <div class="slide-coach-portrait">JN</div>
+                <div class="slide-coach-info">
+                  <div class="slide-coach-name">Jeff Nygaard</div>
+                  <div class="slide-coach-role">Head Coach · Men's VB</div>
+                  <div class="slide-coach-email">✉ jnygaard@usc.edu</div>
+                </div>
+                <div class="slide-coach-badge">Verified</div>
+              </div>
+              <div style="margin-top:0.9rem; display:flex; gap:0.4rem;">
+                <div class="slide-academic-stat" style="background:linear-gradient(135deg,#fef3c7,#fde68a);"><div class="v" style="color:#92400e;">#4</div><div class="l">AVCA Rank</div></div>
+                <div class="slide-academic-stat" style="background:linear-gradient(135deg,#ecfdf5,#d1fae5);"><div class="v" style="color:#047857;">16-3</div><div class="l">2025 Record</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 4 — Gmail Drafts / Outreach -->
+    <div class="hero-slide">
+      <div class="slide-frame">
+        <div class="slide-sidebar">
+          <div class="slide-sidebar-logo">RECRUITING HUB</div>
+          <div class="slide-sidebar-sub">Men's Volleyball</div>
+          <div class="slide-sidebar-cta">✦ Discover a Program</div>
+          <div class="slide-sidebar-nav">
+            <div>▦ Schools</div>
+            <div>✉ Email Templates</div>
+            <div class="active">▸ Gmail Drafts</div>
+            <div>⚙ Settings</div>
+          </div>
+        </div>
+        <div class="slide-main">
+          <div class="slide-crumb">● Outreach Automation</div>
+          <div class="slide-title">GMAIL <span style="color:#10b981;">DRAFT CREATOR</span></div>
+          <div class="slide-subtitle">Create personalized drafts for every coach on your list in one click.</div>
+          <div class="slide-outreach-row">
+            <div>
+              <div class="slide-outreach-btn">✉ Create 14 Drafts Now <span>→</span></div>
+              <div class="slide-mini-row"><span class="lbl">Jeff Nygaard · USC</span><span class="val" style="color:#10b981;">✓ Ready</span></div>
+              <div class="slide-mini-row"><span class="lbl">Jon Girten · Concordia Irvine</span><span class="val" style="color:#10b981;">✓ Ready</span></div>
+              <div class="slide-mini-row"><span class="lbl">Mike Iandolo · Ball State</span><span class="val" style="color:#10b981;">✓ Ready</span></div>
+              <div class="slide-mini-row"><span class="lbl">Theo Edwards · CSUN</span><span class="val" style="color:#10b981;">✓ Ready</span></div>
+              <div class="slide-mini-row"><span class="lbl">Kyle Steele · Jessup</span><span class="val" style="color:#64748b;">Drafting…</span></div>
+            </div>
+            <div class="slide-draft-box">
+              <div><span class="to">To:</span> jnygaard@usc.edu</div>
+              <div><span class="to">From:</span> parkerhenderson.setter.2028@gmail.com</div>
+              <div class="subj">Setter · Class of 2028 · Brophy CP / AZ Fear 17s</div>
+              <div style="font-family:'DM Sans',sans-serif; font-size:0.74rem; line-height:1.6; color:#334155;">
+                Coach Nygaard,<br/><br/>
+                My name is Parker Henderson, a 6'2" setter at Brophy College Prep in Phoenix, playing 17s for AZ Fear. USC Marshall has been a top academic target since I began this process, and I'm writing to introduce myself for your 2028 class…
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
   <div class="hero-overlay"></div>
 
   <div class="hero-content">
