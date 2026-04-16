@@ -5,7 +5,9 @@ import {
   MapPin, TrendingUp, GraduationCap,
   Mail, Calendar, Zap, BookOpen, Users, Star, Plane, Church,
   Copy, Check, FileText, Send,
-  MoreVertical, EyeOff, Eye, ArrowUpCircle, ArrowDownCircle, ChevronDown
+  MoreVertical, EyeOff, Eye, ArrowUpCircle, ArrowDownCircle, ChevronDown,
+  Phone, Camera, BarChart3, Video, ClipboardList, PartyPopper,
+  PenLine, Briefcase, Circle, X, Inbox, CheckCircle2
 } from 'lucide-react';
 
 const FontStyle = () => (
@@ -560,7 +562,7 @@ const ALL_SCHOOLS_DATA = [
   },
 ];
 
-// ─── HELPERS ─────────────────────────────────────────────────────────────────
+// ─── HELPERS ───────────────��─────────────────────────────────────────────────
 const getRecordTally = (sched) => {
   let w = 0, l = 0;
   (sched || []).forEach(g => { if (g.r?.startsWith('W')) w++; if (g.r?.startsWith('L')) l++; });
@@ -685,12 +687,12 @@ const CoachCard = ({ coach, schoolId }) => {
           )}
           {coach.phone && (
             <div className="flex items-center gap-1 text-xs text-slate-500 mt-1">
-              <span className="flex-shrink-0">📞</span>
+              <Phone className="w-3 h-3 flex-shrink-0" />
               <span>{coach.phone}</span>
             </div>
           )}
           {!photoUrl && (
-            <div className="text-[10px] text-amber-600 mt-1.5 font-medium">📷 No photo on file</div>
+            <div className="flex items-center gap-1 text-[10px] text-amber-600 mt-1.5 font-medium"><Camera className="w-3 h-3" /> No photo on file</div>
           )}
         </div>
       </div>
@@ -732,7 +734,7 @@ const ExecutiveSummary = ({ school }) => {
         <div className="flex flex-wrap gap-2 mb-3">
           {interests.map(({ icon, label, color }) => (
             <span key={label} className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-bold ${color}`}>
-              {icon} {label} ✓
+              {icon} {label} <Check className="w-3 h-3" />
             </span>
           ))}
           {notFit.map(label => (
@@ -742,10 +744,10 @@ const ExecutiveSummary = ({ school }) => {
           ))}
         </div>
         <div className="flex flex-wrap gap-4 text-xs text-blue-300 border-t border-white/10 pt-3">
-          <span>🏐 {school.divLevel} · {school.conference}</span>
-          <span>📊 Setter Need: <strong className="text-white">{school.setterNeed}</strong></span>
-          <span>🎯 Priority: <strong className="text-white">{school.priority}</strong></span>
-          {school.programRank && school.programRank !== "NR" && <span>🏆 AVCA <strong className="text-amber-300">{school.programRank}</strong></span>}
+          <span className="inline-flex items-center gap-1.5"><ShieldCheck className="w-3.5 h-3.5" /> {school.divLevel} · {school.conference}</span>
+          <span className="inline-flex items-center gap-1.5"><BarChart3 className="w-3.5 h-3.5" /> Setter Need: <strong className="text-white">{school.setterNeed}</strong></span>
+          <span className="inline-flex items-center gap-1.5"><Target className="w-3.5 h-3.5" /> Priority: <strong className="text-white">{school.priority}</strong></span>
+          {school.programRank && school.programRank !== "NR" && <span className="inline-flex items-center gap-1.5"><Trophy className="w-3.5 h-3.5" /> AVCA <strong className="text-amber-300">{school.programRank}</strong></span>}
         </div>
       </div>
     </div>
@@ -876,8 +878,12 @@ const EmailTemplatesView = ({ school, onBack }) => {
                 {school ? ` These templates are pre-filled for ${school.name}${school.coaches?.[0]?.name ? ` — Coach ${school.coaches[0].name.split(' ').slice(-1)[0]}` : ''}.` : ' Select a school from the dashboard to auto-fill coach names.'}
               </p>
               <div className="flex flex-wrap gap-2">
-                {['✉️ Phase 1: Introduce → get on radar', '🏆 Phase 2: Tournament invite → live eval', '🎥 Phase 3: New video → show growth'].map((tip, i) => (
-                  <span key={i} className="px-3 py-1 bg-white/70 text-blue-800 text-xs font-semibold rounded-full border border-blue-200">{tip}</span>
+                {[
+                  { Icon: Mail, text: 'Phase 1: Introduce → get on radar' },
+                  { Icon: Trophy, text: 'Phase 2: Tournament invite → live eval' },
+                  { Icon: Video, text: 'Phase 3: New video → show growth' },
+                ].map(({ Icon, text }, i) => (
+                  <span key={i} className="inline-flex items-center gap-1.5 px-3 py-1 bg-white/70 text-blue-800 text-xs font-semibold rounded-full border border-blue-200"><Icon className="w-3.5 h-3.5" /> {text}</span>
                 ))}
               </div>
             </div>
@@ -903,7 +909,7 @@ const EmailTemplatesView = ({ school, onBack }) => {
         {/* ACTIVE TEMPLATE CARD */}
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
           <div className={`px-6 py-3 flex items-center gap-2 text-sm font-semibold border-b border-slate-100 ${colors.light}`}>
-            <span className="text-lg">{tpl.icon === 'mail' ? '✉️' : tpl.icon === 'send' ? '🏆' : '🎥'}</span>
+            <span className="inline-flex items-center">{tpl.icon === 'mail' ? <Mail className="w-5 h-5" /> : tpl.icon === 'send' ? <Trophy className="w-5 h-5" /> : <Video className="w-5 h-5" />}</span>
             <span>{tpl.tip}</span>
             {school?.coaches?.[0]?.email && (
               <span className="ml-auto text-xs font-normal opacity-75">Send to: <strong>{school.coaches[0].email}</strong></span>
@@ -971,7 +977,7 @@ const EmailTemplatesView = ({ school, onBack }) => {
                   <div className="font-black text-slate-800 text-sm mb-2" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>{t.label.toUpperCase()}</div>
                   <div className="text-xs text-slate-600 leading-relaxed mb-3">{t.tip}</div>
                   <button onClick={() => setActiveTab(id)} className={`w-full py-2 rounded-xl text-xs font-bold uppercase tracking-wide border ${activeTab === id ? `${c.badge} text-white border-transparent` : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300'}`}>
-                    {activeTab === id ? '✓ Currently Viewing' : 'View Template'}
+                    {activeTab === id ? (<span className="inline-flex items-center gap-1.5"><Check className="w-3.5 h-3.5" /> Currently Viewing</span>) : 'View Template'}
                   </button>
                 </div>
               );
@@ -981,19 +987,19 @@ const EmailTemplatesView = ({ school, onBack }) => {
 
         {/* PRO TIPS */}
         <div className="mt-8 bg-slate-900 rounded-2xl p-6 text-white">
-          <div className="font-black text-white text-lg mb-4 uppercase tracking-widest" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>📋 Outreach Pro Tips</div>
+          <div className="flex items-center gap-2 font-black text-white text-lg mb-4 uppercase tracking-widest" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}><ClipboardList className="w-5 h-5" /> Outreach Pro Tips</div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-slate-300 leading-relaxed">
             {[
-              { icon: '📬', tip: 'Always fill in ALL bracketed fields before sending. Sending a template with "[INSERT]" still in it is worse than not sending at all.' },
-              { icon: '🎯', tip: "Personalize Phase 1 with one specific fact about the program — a recent win, a coach's style, or a specific major you researched." },
-              { icon: '📅', tip: 'Send Phase 2 exactly 7–10 days before the tournament, not the night before. Coaches plan travel in advance.' },
-              { icon: '🎥', tip: 'For Phase 3, mention one specific skill you have improved. Vague follow-ups get ignored. Specific growth stories get responses.' },
-              { icon: '✅', tip: 'Log every email in the Interaction Log on each school detail page to keep your pipeline status current.' },
-              { icon: '📞', tip: 'If a coach responds, move immediately to a phone/video call. Rapid responsiveness signals high character.' },
-            ].map((item, i) => (
+              { Icon: Inbox, tip: 'Always fill in ALL bracketed fields before sending. Sending a template with "[INSERT]" still in it is worse than not sending at all.' },
+              { Icon: Target, tip: "Personalize Phase 1 with one specific fact about the program — a recent win, a coach's style, or a specific major you researched." },
+              { Icon: Calendar, tip: 'Send Phase 2 exactly 7–10 days before the tournament, not the night before. Coaches plan travel in advance.' },
+              { Icon: Video, tip: 'For Phase 3, mention one specific skill you have improved. Vague follow-ups get ignored. Specific growth stories get responses.' },
+              { Icon: CheckCircle2, tip: 'Log every email in the Interaction Log on each school detail page to keep your pipeline status current.' },
+              { Icon: Phone, tip: 'If a coach responds, move immediately to a phone/video call. Rapid responsiveness signals high character.' },
+            ].map(({ Icon, tip }, i) => (
               <div key={i} className="flex gap-3 p-3 bg-white/5 rounded-xl">
-                <span className="text-xl flex-shrink-0">{item.icon}</span>
-                <span>{item.tip}</span>
+                <Icon className="w-5 h-5 flex-shrink-0 text-slate-200 mt-0.5" />
+                <span>{tip}</span>
               </div>
             ))}
           </div>
@@ -1049,7 +1055,8 @@ const GmailDraftsView = ({ allSchools, onBack }) => {
     const message = [
       `To: ${to}`,
       `Subject: ${subject}`,
-      `MIME-Version: 1.0`r`n      `Content-Type: text/html; charset=utf-8`,
+      `MIME-Version: 1.0`,
+      `Content-Type: text/html; charset=utf-8`,
       ``,
       body,
     ].join('\r\n');
@@ -1199,8 +1206,8 @@ const GmailDraftsView = ({ allSchools, onBack }) => {
               {/* PROGRESS SUMMARY */}
               {Object.keys(results).length > 0 && (
                 <div className="flex gap-3 mb-4 p-3 bg-slate-50 rounded-xl">
-                  <span className="text-emerald-600 font-bold text-sm">✓ {doneCount} created</span>
-                  {errorCount > 0 && <span className="text-red-500 font-bold text-sm">✗ {errorCount} failed</span>}
+                  <span className="inline-flex items-center gap-1.5 text-emerald-600 font-bold text-sm"><Check className="w-4 h-4" /> {doneCount} created</span>
+                  {errorCount > 0 && <span className="inline-flex items-center gap-1.5 text-red-500 font-bold text-sm"><X className="w-4 h-4" /> {errorCount} failed</span>}
                   <span className="text-slate-400 text-sm">{Object.keys(results).length} / {schoolsWithEmail.length} processed</span>
                   {!isRunning && doneCount > 0 && (
                     <a href="https://mail.google.com/mail/u/0/#drafts" target="_blank" rel="noreferrer"
@@ -1230,8 +1237,8 @@ const GmailDraftsView = ({ allSchools, onBack }) => {
                         <div className="text-[11px] text-slate-400 truncate">To: {to || 'No email on file'}</div>
                       </div>
                       <div className="text-[10px] font-bold px-2 py-1 rounded-full flex-shrink-0 uppercase tracking-wide">
-                        {status === 'done'    && <span className="text-emerald-700 bg-emerald-100 px-2 py-1 rounded-full">✓ Draft Created</span>}
-                        {status === 'error'   && <span className="text-red-600 bg-red-100 px-2 py-1 rounded-full">✗ Error — Retry</span>}
+                        {status === 'done'    && <span className="inline-flex items-center gap-1 text-emerald-700 bg-emerald-100 px-2 py-1 rounded-full"><Check className="w-3 h-3" /> Draft Created</span>}
+                        {status === 'error'   && <span className="inline-flex items-center gap-1 text-red-600 bg-red-100 px-2 py-1 rounded-full"><X className="w-3 h-3" /> Error — Retry</span>}
                         {status === 'pending' && <span className="text-blue-600 bg-blue-100 px-2 py-1 rounded-full flex items-center gap-1"><Loader2 className="w-3 h-3 animate-spin inline" /> Creating…</span>}
                         {status === 'skipped' && <span className="text-slate-500 bg-slate-100 px-2 py-1 rounded-full">No Email</span>}
                         {!status && <span className="text-slate-300 bg-slate-50 px-2 py-1 rounded-full border border-slate-200">Queued</span>}
@@ -1245,7 +1252,7 @@ const GmailDraftsView = ({ allSchools, onBack }) => {
             {/* DONE STATE */}
             {!isRunning && doneCount === schoolsWithEmail.length && doneCount > 0 && (
               <div className="bg-emerald-600 rounded-2xl p-6 text-white text-center">
-                <div className="text-4xl mb-2">🎉</div>
+                <div className="flex justify-center mb-2"><PartyPopper className="w-10 h-10" /></div>
                 <div className="font-black text-2xl mb-1" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>ALL {doneCount} DRAFTS CREATED!</div>
                 <p className="text-emerald-100 text-sm mb-4">Head to Gmail Drafts, personalize the [INSERT] fields in each email, then send when ready.</p>
                 <a href="https://mail.google.com/mail/u/0/#drafts" target="_blank" rel="noreferrer"
@@ -1638,17 +1645,20 @@ export default function App() {
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[
-              { when: "Now — 2027", what: "Contact coaches, fill questionnaires, attend camps/clinics. AZ Fear 17s visibility is key.", color: "border-blue-400 bg-blue-50", icon: "📬" },
-              { when: "June 15, 2026", what: "D-I coaches may now initiate contact with Parker (Sophomore year — critical window)", color: "border-amber-400 bg-amber-50", icon: "📞" },
-              { when: "Nov 2028", what: "Early National Signing Period (D-I only) opens — target offer by this date", color: "border-purple-400 bg-purple-50", icon: "✍️" },
-              { when: "Feb 2028", what: "National Signing Day — final letters of intent due", color: "border-emerald-400 bg-emerald-50", icon: "🏆" },
-            ].map((item, i) => (
-              <div key={i} className={`rounded-xl border-l-4 p-4 ${item.color}`}>
-                <div className="text-2xl mb-1">{item.icon}</div>
-                <div className="font-bold text-slate-800 text-sm mb-1">{item.when}</div>
-                <div className="text-slate-600 text-xs leading-relaxed">{item.what}</div>
-              </div>
-            ))}
+              { when: "Now — 2027", what: "Contact coaches, fill questionnaires, attend camps/clinics. AZ Fear 17s visibility is key.", color: "border-blue-400 bg-blue-50", iconColor: "text-blue-600", Icon: Inbox },
+              { when: "June 15, 2026", what: "D-I coaches may now initiate contact with Parker (Sophomore year — critical window)", color: "border-amber-400 bg-amber-50", iconColor: "text-amber-600", Icon: Phone },
+              { when: "Nov 2028", what: "Early National Signing Period (D-I only) opens — target offer by this date", color: "border-purple-400 bg-purple-50", iconColor: "text-purple-600", Icon: PenLine },
+              { when: "Feb 2028", what: "National Signing Day — final letters of intent due", color: "border-emerald-400 bg-emerald-50", iconColor: "text-emerald-600", Icon: Trophy },
+            ].map((item, i) => {
+              const Icon = item.Icon;
+              return (
+                <div key={i} className={`rounded-xl border-l-4 p-4 ${item.color}`}>
+                  <Icon className={`w-6 h-6 mb-1 ${item.iconColor}`} />
+                  <div className="font-bold text-slate-800 text-sm mb-1">{item.when}</div>
+                  <div className="text-slate-600 text-xs leading-relaxed">{item.what}</div>
+                </div>
+              );
+            })}
           </div>
         </div>
 
@@ -1843,18 +1853,22 @@ export default function App() {
                 )}
                 <div className="space-y-2 text-xs">
                   {[
-                    { label: "Business", value: sel.academic?.business, icon: "💼" },
-                    { label: "Aviation", value: sel.academic?.aviation, icon: "✈️" },
-                    { label: "Faith/Theology", value: sel.academic?.theology, icon: "✝️" },
-                  ].map(row => row.value && row.value !== "—" && row.value !== "N/A" ? (
+                    { label: "Business", value: sel.academic?.business, Icon: Briefcase },
+                    { label: "Aviation", value: sel.academic?.aviation, Icon: Plane },
+                    { label: "Faith/Theology", value: sel.academic?.theology, Icon: Church },
+                  ].map(row => {
+                    if (!row.value || row.value === "—" || row.value === "N/A") return null;
+                    const Icon = row.Icon;
+                    return (
                     <div key={row.label} className="flex gap-2 p-2 bg-slate-50 rounded-lg">
-                      <span className="flex-shrink-0 text-sm">{row.icon}</span>
+                      <Icon className="flex-shrink-0 w-4 h-4 text-slate-500 mt-0.5" />
                       <div>
                         <div className="font-bold text-slate-600 text-[10px] uppercase tracking-wide">{row.label}</div>
                         <div className="text-slate-700 text-xs">{row.value}</div>
                       </div>
                     </div>
-                  ) : null)}
+                    );
+                  })}
                 </div>
               </div>
 
@@ -1899,8 +1913,9 @@ export default function App() {
                   </div>
                   <div className="mt-4 p-3 rounded-xl border border-dashed border-slate-300 bg-slate-50/50">
                     <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-1">Class of 2028 Opening</div>
-                    <div className={`text-sm font-bold ${sel.setterNeed === 'High' ? 'text-rose-600' : sel.setterNeed === 'Med' ? 'text-amber-600' : 'text-slate-400'}`}>
-                      {sel.setterNeed === 'High' ? '🟢 Strong — multiple roster spots likely open' : sel.setterNeed === 'Med' ? '🟡 Moderate — 1 spot likely available' : '🔴 Limited — roster appears full through 2028'}
+                    <div className={`flex items-center gap-2 text-sm font-bold ${sel.setterNeed === 'High' ? 'text-emerald-600' : sel.setterNeed === 'Med' ? 'text-amber-600' : 'text-rose-600'}`}>
+                      <Circle className={`w-2.5 h-2.5 flex-shrink-0 ${sel.setterNeed === 'High' ? 'fill-emerald-500 text-emerald-500' : sel.setterNeed === 'Med' ? 'fill-amber-500 text-amber-500' : 'fill-rose-500 text-rose-500'}`} />
+                      {sel.setterNeed === 'High' ? 'Strong — multiple roster spots likely open' : sel.setterNeed === 'Med' ? 'Moderate — 1 spot likely available' : 'Limited — roster appears full through 2028'}
                     </div>
                   </div>
                 </div>
