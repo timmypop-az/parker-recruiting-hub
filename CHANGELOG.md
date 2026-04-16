@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **Discovery Engine** returning "Claude returned non-JSON" for well-known
+  schools (e.g. "Ohio State"). The code-fence-stripping regex in
+  `claude-discovery.js` was matching the entire fenced block including its
+  contents, so when Claude wrapped its reply in ` ```json ... ``` ` the
+  JSON body was deleted and `JSON.parse("")` threw. Regex now strips only
+  the fence markers, plus a fallback that extracts the outermost `{...}`
+  block so stray prose before/after the JSON no longer breaks parsing.
+  Raw response (first 500 chars) is returned in the error payload for
+  future diagnosis.
+
 ## [0.2.0] — 2026-04-15
 
 Major UI overhaul pushing the dashboard toward a production SaaS feel:

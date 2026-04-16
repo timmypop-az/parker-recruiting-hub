@@ -73,16 +73,31 @@ If no men's volleyball program, return: {"isVolleyballSchool": false}`;
 
     const data = await upstream.json();
     const text = data.content?.find(b => b.type === "text")?.text || "";
-    const cleaned = text.replace(/```json[\s\S]*?```|```/g, "").trim();
+
+    // Strip markdown code fences if Claude wrapped the response. The previous
+    // regex ate the content between fences; this one strips only the markers.
+    let cleaned = text
+      .replace(/^\s*```(?:json)?\s*/i, "")
+      .replace(/\s*```\s*$/i, "")
+      .trim();
+
+    // Fallback: if there's prose before/after the JSON, extract the outermost
+    // {...} block. Always run when braces exist so a trailing note doesn't
+    // break JSON.parse.
+    const first = cleaned.indexOf("{");
+    const last = cleaned.lastIndexOf("}");
+    if (first !== -1 && last > first) {
+      cleaned = cleaned.slice(first, last + 1);
+    }
 
     let parsed;
     try {
       parsed = JSON.parse(cleaned);
     } catch (parseErr) {
-      console.error("Failed to parse Claude response as JSON:", cleaned.slice(0, 500));
+      console.error("Failed to parse Claude response as JSON. Raw text:", text.slice(0, 1000));
       return new Response(JSON.stringify({
         error: "Claude returned non-JSON. Try a more specific school name.",
-        raw: cleaned.slice(0, 500),
+        raw: text.slice(0, 500),
       }), {
         status: 502,
         headers: { "Content-Type": "application/json" },
