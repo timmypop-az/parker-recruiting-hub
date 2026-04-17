@@ -13,6 +13,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   verification against each school's official Sidearm coaches page. Ball
   State's Mike Iandolo is `michael.iandolo@bsu.edu` (was `miandolo@bsu.edu`);
   Penn State's Mark Pavlik is `mtp7@psu.edu` (was `map33@psu.edu`).
+- **Four more head coach records corrected** after verifying against each
+  school's own volleyball coaches page linked from the hub:
+  - Vanguard: "Athletics Dept / athletics@vanguard.edu" → "Brian Rofer /
+    brian.rofer@vanguard.edu" (head coach was a stub).
+  - Lewis: Dan Friend's email `dfriend@lewisu.edu` → `friendda@lewisu.edu`.
+  - Purdue Fort Wayne: Donny Gleason's email `dgleason@pfw.edu` →
+    `donald.gleason@pfw.edu`.
+  - Arizona Christian: "Chris Shearn / chris.shearn@arizonachristian.edu" →
+    "Caden Toben / caden.toben@arizonachristian.edu" (new head coach).
 - **Discovery Engine** returning "Claude returned non-JSON" for well-known
   schools (e.g. "Ohio State"). The code-fence-stripping regex in
   `claude-discovery.js` was matching the entire fenced block including its
