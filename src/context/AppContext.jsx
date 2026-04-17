@@ -134,6 +134,17 @@ export function AppProvider({ children }) {
   const [divFilter, setDivFilter] = useState('All');
   const [newSchoolName, setNewSchoolName] = useState('');
   const [isSearching, setIsSearching] = useState(false);
+  // Inline feedback banner for the Discovery "Add School" action. Replaces the
+  // blocking alert() calls so the user sees what happened, where the school
+  // was placed, and any acronym interpretation. Shape:
+  //   { kind: 'success'|'duplicate'|'not_volleyball'|'error',
+  //     text: string,
+  //     school?: Object,           // the parsed (or existing) school record
+  //     interpretation?: string,   // what Claude resolved the input to
+  //     placedSection?: string,    // 'primary' | 'discovery' | 'hidden'
+  //     verified?: boolean }
+  const [addResult, setAddResult] = useState(null);
+  const clearAddResult = () => setAddResult(null);
   const [logDate, setLogDate] = useState('');
   const [logType, setLogType] = useState('Submitted Questionnaire');
   const [showHidden, setShowHidden] = useState(false);
@@ -251,18 +262,68 @@ export function AppProvider({ children }) {
   const filteredDiscovery = useMemo(() => applyFilters(discoverySchools).slice().sort(sortFn), [discoverySchools, search, divFilter, sortBy, sortDir, statuses, schoolOrder]);
 
   const handleAddSchool = async () => {
-    if (!newSchoolName.trim()) return;
+    const typedName = newSchoolName.trim();
+    if (!typedName) return;
     setIsSearching(true);
+    setAddResult(null);
     try {
-      const parsed = await fetchSchoolFromClaude(newSchoolName);
+      const parsed = await fetchSchoolFromClaude(typedName);
+
+      // No men's volleyball program at the resolved school.
       if (parsed.isVolleyballSchool === false) {
-        alert("No Men's Volleyball program found.");
-      } else {
-        setExtraSchools(prev => [{ ...parsed, section: parsed.section || "discovery" }, ...prev]);
-        setNewSchoolName('');
+        setAddResult({
+          kind: 'not_volleyball',
+          text: parsed.inputInterpretation
+            ? `No men's volleyball program found at ${parsed.inputInterpretation}.`
+            : `No men's volleyball program found for "${typedName}".`,
+          interpretation: parsed.inputInterpretation || null,
+        });
+        return;
       }
-    } catch (err) { alert(`Error: ${err.message}`); }
-    finally { setIsSearching(false); }
+
+      // Duplicate detection — check both id and a loose name match against the
+      // merged school list so seeded schools can't be silently re-added.
+      const normalized = (x) => (x || '').toString().toLowerCase().trim();
+      const existing = allSchools.find(s =>
+        (parsed.id && s.id === parsed.id) ||
+        (parsed.name && normalized(s.name) === normalized(parsed.name))
+      );
+      if (existing) {
+        const placed = getEffectiveSection(existing) || 'primary';
+        setAddResult({
+          kind: 'duplicate',
+          text: `${existing.name} is already in your hub.`,
+          school: existing,
+          interpretation: parsed.inputInterpretation || null,
+          placedSection: isHidden(existing.id) ? 'hidden' : placed,
+        });
+        setNewSchoolName('');
+        return;
+      }
+
+      // Success — add to extraSchools. Default to the discovery tab if Claude
+      // didn't specify a section. Auto-switch the active tab so the user sees
+      // the school land.
+      const placedSection = parsed.section || 'discovery';
+      const toAdd = { ...parsed, section: placedSection };
+      setExtraSchools(prev => [toAdd, ...prev]);
+      setNewSchoolName('');
+      if (placedSection === 'primary' || placedSection === 'discovery') {
+        setActiveSection(placedSection);
+      }
+      setAddResult({
+        kind: 'success',
+        text: `Added ${parsed.name} to ${placedSection === 'primary' ? 'Primary' : 'Discovery'}.`,
+        school: toAdd,
+        interpretation: parsed.inputInterpretation || null,
+        placedSection,
+        verified: parsed._coachVerified === true,
+      });
+    } catch (err) {
+      setAddResult({ kind: 'error', text: err.message || 'Something went wrong while adding the school.' });
+    } finally {
+      setIsSearching(false);
+    }
   };
 
   const navigate = (s) => { setSel(s); setView('detail'); window.scrollTo(0, 0); };
@@ -305,6 +366,7 @@ export function AppProvider({ children }) {
     view, setView, sel, setSel,
     search, setSearch, divFilter, setDivFilter,
     newSchoolName, setNewSchoolName, isSearching,
+    addResult, setAddResult, clearAddResult,
     logDate, setLogDate, logType, setLogType,
     showHidden, setShowHidden, openMenuId, setOpenMenuId,
     activeSection, setActiveSection,

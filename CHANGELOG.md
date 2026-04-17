@@ -9,6 +9,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Inline Add-School result banner** in the Discovery Engine panel. Replaces
+  the old blocking `alert()` calls with a styled banner that reports success,
+  duplicate, "no men's volleyball", or error — and on success shows the
+  school's division, conference, location, whether the head coach was verified
+  against the school's own site, and which tab the school was placed in.
+  Includes a **View it** button that jumps straight to the detail page (and
+  auto-switches the active tab to match). Driven by a new `addResult` state
+  on `AppContext`. Motivated by the silent-success case when Claude placed a
+  newly-added school in a tab the user wasn't viewing (e.g. Concordia
+  Wisconsin added but not visible because the user was on the Primary tab).
+- **Active-tab auto-switch** after a successful add — the Schools view now
+  flips to whichever section (Primary / Discovery) the new school landed in,
+  so newly-added programs are always on screen without the user hunting.
+- **Duplicate detection** on add. If a parsed school's id or name already
+  exists in `allSchools`, the banner reports "already in your hub" with a
+  View link instead of creating a second entry.
 - **Re-verify Coach button** on the school detail view. Calls a new
   `/coach-verify` Netlify Function that re-runs the head-coach
   verification (shared helper in `_verifyHeadCoach.js`) against the
@@ -38,6 +54,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Discovery Engine prompt now resolves acronyms and nicknames explicitly.**
+  Input like "UCLA", "UCSB", "BYU", "USC", "NYU", "LSU", "MIT", "CSUN", "CUW",
+  "OSU", or "UCI" is expanded to the full official school name before the
+  lookup; ambiguous inputs (e.g. bare "Concordia") are resolved to the campus
+  with the most prominent men's volleyball program. The JSON schema gained an
+  `inputInterpretation` field so the UI can show the user exactly what the
+  typed text was resolved to (also surfaced in the Add-School banner).
 - **Discovery Engine now verifies the head coach from the school's own
   volleyball page** instead of trusting the LLM's general-knowledge output.
   After Claude returns the JSON, the function fetches `{vbUrl}/coaches`

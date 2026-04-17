@@ -2,7 +2,7 @@ import React from 'react';
 import {
   Sparkles, PlusCircle, Loader2, Search, Calendar, ChevronDown, ChevronUp,
   Inbox, Phone, PenLine, Trophy, Target, Compass, EyeOff, Rows3, AlignJustify, X,
-  Move,
+  Move, CheckCircle2, AlertTriangle, Info, ArrowRight,
 } from 'lucide-react';
 import {
   DndContext, PointerSensor, KeyboardSensor, useSensor, useSensors, closestCenter,
@@ -125,6 +125,81 @@ function SectionTabs() {
   );
 }
 
+// ── AddResultBanner: inline success/failure feedback for the Add School flow ──
+// Shows what Claude resolved the user's input to, where the school was placed,
+// whether the head coach was verified, plus a "View it" link that jumps to the
+// detail page. Duplicate / not-volleyball / error states get their own styling.
+function AddResultBanner() {
+  const { addResult, clearAddResult, navigate, setActiveSection } = useApp();
+  if (!addResult) return null;
+
+  const { kind, text, school, interpretation, placedSection, verified } = addResult;
+  const styles = {
+    success:        { bg: 'bg-emerald-50/10 border-emerald-300/40', Icon: CheckCircle2,   iconColor: 'text-emerald-300' },
+    duplicate:      { bg: 'bg-amber-50/10 border-amber-300/40',     Icon: Info,           iconColor: 'text-amber-300'   },
+    not_volleyball: { bg: 'bg-amber-50/10 border-amber-300/40',     Icon: AlertTriangle,  iconColor: 'text-amber-300'   },
+    error:          { bg: 'bg-rose-50/10 border-rose-300/40',       Icon: AlertTriangle,  iconColor: 'text-rose-300'    },
+  }[kind] || { bg: 'bg-white/10 border-white/20', Icon: Info, iconColor: 'text-blue-200' };
+  const { bg, Icon, iconColor } = styles;
+
+  const handleView = () => {
+    if (!school) return;
+    if (placedSection === 'primary' || placedSection === 'discovery') {
+      setActiveSection(placedSection);
+    }
+    navigate(school);
+    clearAddResult();
+  };
+
+  return (
+    <div className={`mt-3 rounded-xl border ${bg} text-white`}>
+      <div className="flex items-start gap-3 p-3 sm:p-4">
+        <Icon className={`w-5 h-5 flex-shrink-0 mt-0.5 ${iconColor}`} />
+        <div className="flex-1 min-w-0">
+          <div className="text-sm font-bold">{text}</div>
+          {interpretation && (
+            <div className="text-[12px] text-blue-100/80 mt-0.5">
+              Interpreted as: <span className="font-semibold text-white">{interpretation}</span>
+            </div>
+          )}
+          {kind === 'success' && school && (
+            <div className="text-[12px] text-blue-100/80 mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5">
+              {school.divLevel && <span>{school.divLevel}</span>}
+              {school.conference && <span>{school.conference}</span>}
+              {(school.city || school.state) && <span>{[school.city, school.state].filter(Boolean).join(', ')}</span>}
+              {verified ? (
+                <span className="inline-flex items-center gap-1 text-emerald-300">
+                  <CheckCircle2 className="w-3 h-3" /> Head coach verified from school site
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1 text-amber-300">
+                  <AlertTriangle className="w-3 h-3" /> Head coach unverified — click Re-verify on the detail page
+                </span>
+              )}
+            </div>
+          )}
+          {(kind === 'success' || kind === 'duplicate') && school && (
+            <button
+              onClick={handleView}
+              className="mt-2 inline-flex items-center gap-1.5 text-xs font-bold text-white bg-white/15 hover:bg-white/25 px-3 py-1.5 rounded-lg transition-colors"
+            >
+              View {school.name}
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+          )}
+        </div>
+        <button
+          onClick={clearAddResult}
+          className="p-1 rounded-lg hover:bg-white/10 text-blue-100/60 hover:text-white flex-shrink-0"
+          aria-label="Dismiss"
+        >
+          <X className="w-4 h-4" />
+        </button>
+      </div>
+    </div>
+  );
+}
+
 // ── DiscoveryEngine: compact, collapsible inline panel ────────────────────────
 function DiscoveryEngine() {
   const {
@@ -200,6 +275,7 @@ function DiscoveryEngine() {
             </button>
           )}
         </div>
+        <AddResultBanner />
       </div>
     </div>
   );

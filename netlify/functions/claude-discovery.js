@@ -31,9 +31,25 @@ export default async (req, context) => {
       });
     }
 
-    const prompt = `You are a college volleyball recruiting expert. Provide comprehensive data for "${schoolName}" men's volleyball program for a recruit named Parker Henderson (setter, born 5/10/09, Brophy College Prep Phoenix AZ, club: AZ Fear 17s, interests: business, aviation, theology).
+    const prompt = `You are a college volleyball recruiting expert. The user typed: "${schoolName}".
+
+First, RESOLVE the input to a specific school:
+- If the input is a common university acronym or nickname, expand it to the full official name.
+  Examples: "UCLA" → "University of California, Los Angeles"; "UCSB" → "UC Santa Barbara";
+  "BYU" → "Brigham Young University"; "USC" → "University of Southern California";
+  "NYU" → "New York University"; "LSU" → "Louisiana State University";
+  "MIT" → "Massachusetts Institute of Technology"; "CSUN" → "Cal State Northridge";
+  "CUW" or "Concordia Wisconsin" → "Concordia University Wisconsin";
+  "OSU" → "Ohio State University" (most common); "UCI" → "UC Irvine".
+- If the input is ambiguous (e.g. "Concordia" could be several schools), pick the one with the
+  most prominent NCAA/NAIA/JUCO MEN'S volleyball program.
+- If the input is already a full school name, use it as-is.
+- Men's volleyball is the sport — pick the campus that fields a men's program.
+
+Then provide comprehensive data for that school's men's volleyball program for a recruit named Parker Henderson (setter, born 5/10/09, Brophy College Prep Phoenix AZ, club: AZ Fear 17s, interests: business, aviation, theology).
 Return ONLY valid JSON (no markdown, no backticks):
 {
+  "inputInterpretation": "Full resolved name of what the user typed (e.g. 'UCLA' → 'University of California, Los Angeles')",
   "id": "short_id", "name": "Full Name", "city": "City", "state": "ST", "mascot": "Mascot",
   "divLevel": "DI|DII|DIII|NAIA|JUCO", "conference": "Conference name",
   "acceptance": "XX%", "tuitionIn": "$XX,XXX", "tuitionOut": "$XX,XXX",
@@ -46,7 +62,8 @@ Return ONLY valid JSON (no markdown, no backticks):
   "azRadar": [], "winHistory": [{ "yr": "2025", "w": 0, "l": 0, "p": ".000" }],
   "schedule26": [], "news": [], "notes": "", "section": "discovery", "isVolleyballSchool": true
 }
-If no men's volleyball program, return: {"isVolleyballSchool": false}`;
+If no men's volleyball program exists at the resolved school, return:
+{"isVolleyballSchool": false, "inputInterpretation": "Full resolved name you tried to look up"}`;
 
     const upstream = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
