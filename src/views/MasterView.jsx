@@ -2,11 +2,43 @@ import React from 'react';
 import {
   Sparkles, PlusCircle, Loader2, Search, Calendar, ChevronDown, ChevronUp,
   Inbox, Phone, PenLine, Trophy, Target, Compass, EyeOff, Rows3, AlignJustify, X,
+  Move,
 } from 'lucide-react';
+import {
+  DndContext, PointerSensor, KeyboardSensor, useSensor, useSensors, closestCenter,
+} from '@dnd-kit/core';
+import {
+  SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy, arrayMove,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import { SchoolRow } from '../components/SchoolRow.jsx';
 import { MobileSchoolCard } from '../components/MobileSchoolCard.jsx';
 import { DIV_CONFIG, PARKER } from '../data/constants.js';
 import { useApp } from '../context/AppContext.jsx';
+
+// ── SortableSchoolRow: wraps SchoolRow with @dnd-kit sortable listeners.
+// Activation distance (8 px) means plain clicks still fire SchoolRow's
+// onClick → navigate(s); drag only kicks in after the pointer moves.
+function SortableSchoolRow({ s }) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
+    useSortable({ id: s.id });
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+    background: isDragging ? '#eff6ff' : undefined,
+  };
+  return (
+    <SchoolRow
+      s={s}
+      ref={setNodeRef}
+      draggable
+      dragStyle={style}
+      dragProps={listeners}
+      {...attributes}
+    />
+  );
+}
 
 // ── SortableHeader: clickable column header with asc/desc arrow ───────────────
 function SortableHeader({ column, label, className = '' }) {
@@ -207,7 +239,59 @@ export function MasterView() {
   const {
     divFilter, setDivFilter, search, setSearch,
     filteredSchools, activeSection, divCounts, allSchools,
+    sortBy, setSortBy, schoolOrder, reorderSchools,
   } = useApp();
+
+  // Drag-and-drop setup. PointerSensor's 8-px activation constraint keeps
+  // plain clicks on a row navigating to the detail view; drag only triggers
+  // after the pointer moves that far.
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  );
+  const isCustom = sortBy === 'custom';
+
+  const handleDragEnd = (event) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    // Work off the currently visible ids so reorder respects the filter/tab.
+    const visibleIds = filteredSchools.map(s => s.id);
+    const oldIdx = visibleIds.indexOf(active.id);
+    const newIdx = visibleIds.indexOf(over.id);
+    if (oldIdx < 0 || newIdx < 0) return;
+    const reorderedVisible = arrayMove(visibleIds, oldIdx, newIdx);
+    // Merge back into the global schoolOrder: take all ids from the existing
+    // order, drop the visible ones, then splice the new visible sequence in
+    // where the first visible id used to live.
+    const baseOrder = schoolOrder.length
+      ? schoolOrder.filter(id => allSchools.some(s => s.id === id))
+      : allSchools.map(s => s.id);
+    const withoutVisible = baseOrder.filter(id => !visibleIds.includes(id));
+    const firstVisibleOrigPos = baseOrder.findIndex(id => visibleIds.includes(id));
+    const insertAt = firstVisibleOrigPos === -1 ? withoutVisible.length : firstVisibleOrigPos;
+    const next = [
+      ...withoutVisible.slice(0, insertAt),
+      ...reorderedVisible,
+      ...withoutVisible.slice(insertAt),
+    ];
+    // Also include any all-schools ids not yet in the order (new seeds/adds),
+    // so they don't get dropped off the end silently.
+    for (const s of allSchools) if (!next.includes(s.id)) next.push(s.id);
+    reorderSchools(next);
+  };
+
+  const toggleManualOrder = () => {
+    if (isCustom) {
+      setSortBy('name');
+      return;
+    }
+    // Seed schoolOrder the first time Manual is turned on so the order
+    // matches what the user currently sees.
+    if (schoolOrder.length === 0) {
+      reorderSchools(allSchools.map(s => s.id));
+    }
+    setSortBy('custom');
+  };
 
   return (
     <div className="px-4 sm:px-6 lg:px-10 py-6 lg:py-8 space-y-6">
@@ -266,6 +350,18 @@ export function MasterView() {
             onChange={e => setSearch(e.target.value)}
           />
         </div>
+        <button
+          onClick={toggleManualOrder}
+          title={isCustom ? 'Click to return to column sorting' : 'Drag rows to reorder (desktop)'}
+          className={`hidden md:inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold uppercase tracking-wide transition-all border ${
+            isCustom
+              ? 'bg-blue-600 text-white border-blue-600 shadow'
+              : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-100'
+          }`}
+        >
+          <Move className="w-3.5 h-3.5" />
+          Manual
+        </button>
         <DensityToggle />
       </div>
 
@@ -284,6 +380,12 @@ export function MasterView() {
         <>
           {/* Desktop table */}
           <div className="hidden md:block bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+            {isCustom && (
+              <div className="px-5 py-2.5 bg-blue-50 border-b border-blue-100 text-[11px] font-bold uppercase tracking-widest text-blue-700 flex items-center gap-2">
+                <Move className="w-3.5 h-3.5" />
+                Manual Order — drag any row to reorder. Click a row to open it.
+              </div>
+            )}
             <div className="overflow-x-auto">
               <table className="w-full text-left">
                 <thead>
@@ -300,9 +402,26 @@ export function MasterView() {
                     <th className="px-5 py-4" />
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {filteredSchools.map(s => <SchoolRow key={s.id} s={s} />)}
-                </tbody>
+                {isCustom ? (
+                  <DndContext
+                    sensors={sensors}
+                    collisionDetection={closestCenter}
+                    onDragEnd={handleDragEnd}
+                  >
+                    <SortableContext
+                      items={filteredSchools.map(s => s.id)}
+                      strategy={verticalListSortingStrategy}
+                    >
+                      <tbody className="divide-y divide-slate-100">
+                        {filteredSchools.map(s => <SortableSchoolRow key={s.id} s={s} />)}
+                      </tbody>
+                    </SortableContext>
+                  </DndContext>
+                ) : (
+                  <tbody className="divide-y divide-slate-100">
+                    {filteredSchools.map(s => <SchoolRow key={s.id} s={s} />)}
+                  </tbody>
+                )}
               </table>
             </div>
           </div>

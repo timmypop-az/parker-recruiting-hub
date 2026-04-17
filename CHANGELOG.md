@@ -7,6 +7,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Re-verify Coach button** on the school detail view. Calls a new
+  `/coach-verify` Netlify Function that re-runs the head-coach
+  verification (shared helper in `_verifyHeadCoach.js`) against the
+  school's own volleyball page, then overrides the stored head coach
+  without touching notes, logs, or status. Verified records are kept
+  in a new `coachOverrides` field in the Netlify Blobs `user-data`
+  payload and merged into each school at render time. A small
+  "Coach re-verified from …" banner appears on detail pages that have
+  an override.
+- **Delete School** action in the row ⋯ menu and at the top of the
+  detail view. User-added schools are removed outright from
+  `extraSchools`; seeded schools are tombstoned in a new
+  `deletedIds` field so the filter in `allSchools` hides them. Deletion
+  is confirmation-gated; status/logs/notes for the id are preserved so
+  a re-add reconnects them automatically.
+- **Delete interaction-log entries**. Each log row in the outreach
+  console gets a (hover-revealed) trash button that calls a new
+  `deleteLogEntry(schoolId, index)` helper. Logs continue to persist
+  in the same Netlify Blobs `user-data` record they always have.
+- **Manual / drag-and-drop school ordering** on the desktop table
+  (@dnd-kit/sortable). A "Manual" toggle in the filter bar switches
+  the sort to a new `custom` mode backed by a `schoolOrder` array
+  (persisted in `user-data`). An 8-px activation distance keeps
+  single clicks navigating to the detail view; drag only engages
+  after the pointer moves. First time Manual is enabled, the order
+  is seeded from the current `allSchools` list so nothing jumps.
+
 ### Changed
 
 - **Discovery Engine now verifies the head coach from the school's own

@@ -1,6 +1,9 @@
 import React, { createContext, useContext, useState, useEffect, useMemo, useRef } from 'react';
 import { ALL_SCHOOLS_DATA } from '../data/schools.js';
-import { loadUserData, saveUserData, fetchSchoolFromClaude } from '../lib/api.js';
+import {
+  loadUserData, saveUserData, fetchSchoolFromClaude,
+  reVerifyCoach as apiReVerifyCoach,
+} from '../lib/api.js';
 
 const AppContext = createContext(null);
 
@@ -18,6 +21,15 @@ export function AppProvider({ children }) {
   const [notes, setNotes] = useState({});
   const [hiddenIds, setHiddenIds] = useState(new Set());
   const [sectionOverrides, setSectionOverrides] = useState({});
+  // Re-verified head-coach records keyed by school id. Overrides the first
+  // entry of the school's coaches[] when rendering.
+  const [coachOverrides, setCoachOverrides] = useState({});
+  // Hard-deletes: ids the user has deleted from the hub (applied to both
+  // seeded and user-added schools; user-added are also removed from extraSchools).
+  const [deletedIds, setDeletedIds] = useState(new Set());
+  // Manual order (array of school ids). When sortBy === 'custom', rows are
+  // arranged in this order; drag-and-drop in MasterView updates it.
+  const [schoolOrder, setSchoolOrder] = useState([]);
   const hydratedRef = useRef(false);
 
   // Hide/move helpers
@@ -26,6 +38,51 @@ export function AppProvider({ children }) {
   const hideSchool = (id) => setHiddenIds(prev => { const n = new Set(prev); n.add(id); return n; });
   const unhideSchool = (id) => setHiddenIds(prev => { const n = new Set(prev); n.delete(id); return n; });
   const moveToSection = (id, section) => setSectionOverrides(prev => ({ ...prev, [id]: section }));
+
+  // Hard-delete: for user-added schools, drop from extraSchools entirely; for
+  // seeded schools, tombstone in deletedIds so the filter in allSchools hides
+  // them. Also drops the id from hiddenIds / sectionOverrides / schoolOrder so
+  // state stays clean if the school is later re-added.
+  const deleteSchool = (id) => {
+    const wasExtra = extraSchools.some(s => s.id === id);
+    if (wasExtra) setExtraSchools(prev => prev.filter(s => s.id !== id));
+    setDeletedIds(prev => { const n = new Set(prev); n.add(id); return n; });
+    setHiddenIds(prev => { const n = new Set(prev); n.delete(id); return n; });
+    setSectionOverrides(prev => {
+      if (!(id in prev)) return prev;
+      const n = { ...prev }; delete n[id]; return n;
+    });
+    setSchoolOrder(prev => prev.filter(x => x !== id));
+  };
+  const undeleteSchool = (id) =>
+    setDeletedIds(prev => { const n = new Set(prev); n.delete(id); return n; });
+
+  // Re-run the head-coach verification for a school and persist the result
+  // as a coach override. Returns the verified record so callers can show
+  // a toast / inline success message.
+  const reVerifyCoach = async (schoolId, vbUrl) => {
+    const verified = await apiReVerifyCoach(vbUrl);
+    const record = {
+      name: verified.name || '',
+      role: 'Head Coach',
+      email: verified.email,
+      phone: verified.phone || '',
+      _verified: true,
+      _verifiedAt: new Date().toISOString(),
+      _sourceUrl: verified._sourceUrl,
+      _titleConfirmed: !!verified._titleConfirmed,
+    };
+    setCoachOverrides(prev => ({ ...prev, [schoolId]: record }));
+    return record;
+  };
+  const clearCoachOverride = (schoolId) =>
+    setCoachOverrides(prev => {
+      if (!(schoolId in prev)) return prev;
+      const n = { ...prev }; delete n[schoolId]; return n;
+    });
+
+  // Replace the manual school order (used by drag-and-drop in MasterView).
+  const reorderSchools = (newOrder) => setSchoolOrder(Array.from(newOrder));
 
   // Hydrate everything from Netlify Blobs once on mount
   useEffect(() => {
@@ -38,6 +95,9 @@ export function AppProvider({ children }) {
         if (data.notes && typeof data.notes === 'object') setNotes(data.notes);
         if (Array.isArray(data.hiddenIds)) setHiddenIds(new Set(data.hiddenIds));
         if (data.sectionOverrides && typeof data.sectionOverrides === 'object') setSectionOverrides(data.sectionOverrides);
+        if (data.coachOverrides && typeof data.coachOverrides === 'object') setCoachOverrides(data.coachOverrides);
+        if (Array.isArray(data.deletedIds)) setDeletedIds(new Set(data.deletedIds));
+        if (Array.isArray(data.schoolOrder)) setSchoolOrder(data.schoolOrder);
       } catch (err) {
         console.warn("Failed to hydrate user data:", err);
       } finally {
@@ -59,10 +119,13 @@ export function AppProvider({ children }) {
         notes,
         hiddenIds: [...hiddenIds],
         sectionOverrides,
+        coachOverrides,
+        deletedIds: [...deletedIds],
+        schoolOrder,
       }).catch(err => console.warn("Save failed:", err));
     }, 600);
     return () => clearTimeout(timer);
-  }, [extraSchools, statuses, logs, notes, hiddenIds, sectionOverrides]);
+  }, [extraSchools, statuses, logs, notes, hiddenIds, sectionOverrides, coachOverrides, deletedIds, schoolOrder]);
 
   // ── UI STATE ──
   const [view, setView] = useState('master');
@@ -97,7 +160,19 @@ export function AppProvider({ children }) {
     return () => document.removeEventListener('mousedown', onDocClick);
   }, [openMenuId]);
 
-  const allSchools = useMemo(() => [...ALL_SCHOOLS_DATA, ...extraSchools], [extraSchools]);
+  const allSchools = useMemo(() => {
+    const base = [...ALL_SCHOOLS_DATA, ...extraSchools];
+    return base
+      .filter(s => !deletedIds.has(s.id))
+      .map(s => {
+        const override = coachOverrides[s.id];
+        if (!override) return s;
+        // Replace the first (head) coach entry with the verified record;
+        // preserve any additional coaches the school record may carry.
+        const rest = Array.isArray(s.coaches) ? s.coaches.slice(1) : [];
+        return { ...s, coaches: [override, ...rest] };
+      });
+  }, [extraSchools, deletedIds, coachOverrides]);
   const visibleSchools = useMemo(() => allSchools.filter(s => !isHidden(s.id)), [allSchools, hiddenIds]);
   const primarySchools = useMemo(() => visibleSchools.filter(s => getEffectiveSection(s) === "primary"), [visibleSchools, sectionOverrides]);
   const discoverySchools = useMemo(() => visibleSchools.filter(s => getEffectiveSection(s) === "discovery"), [visibleSchools, sectionOverrides]);
@@ -117,6 +192,16 @@ export function AppProvider({ children }) {
   const STATUS_RANK = { None: 0, Questionnaire: 1, 'Reached Out': 2, 'Coach Contact': 3, 'Campus Visit': 4, Offer: 5 };
 
   const sortFn = (a, b) => {
+    // Custom / manual ordering — respects schoolOrder; ids not in the array
+    // fall through to alphabetical at the end.
+    if (sortBy === 'custom') {
+      const ia = schoolOrder.indexOf(a.id);
+      const ib = schoolOrder.indexOf(b.id);
+      if (ia === -1 && ib === -1) return (a.name || '').localeCompare(b.name || '');
+      if (ia === -1) return 1;
+      if (ib === -1) return -1;
+      return ia - ib;
+    }
     const dir = sortDir === 'asc' ? 1 : -1;
     const av = (() => {
       switch (sortBy) {
@@ -158,12 +243,12 @@ export function AppProvider({ children }) {
 
   const filteredSchools = useMemo(
     () => applyFilters(activeList).slice().sort(sortFn),
-    [activeList, search, divFilter, sortBy, sortDir, statuses]
+    [activeList, search, divFilter, sortBy, sortDir, statuses, schoolOrder]
   );
 
   // Legacy (kept for compatibility; master view no longer references these directly)
-  const filteredPrimary = useMemo(() => applyFilters(primarySchools).slice().sort(sortFn), [primarySchools, search, divFilter, sortBy, sortDir, statuses]);
-  const filteredDiscovery = useMemo(() => applyFilters(discoverySchools).slice().sort(sortFn), [discoverySchools, search, divFilter, sortBy, sortDir, statuses]);
+  const filteredPrimary = useMemo(() => applyFilters(primarySchools).slice().sort(sortFn), [primarySchools, search, divFilter, sortBy, sortDir, statuses, schoolOrder]);
+  const filteredDiscovery = useMemo(() => applyFilters(discoverySchools).slice().sort(sortFn), [discoverySchools, search, divFilter, sortBy, sortDir, statuses, schoolOrder]);
 
   const handleAddSchool = async () => {
     if (!newSchoolName.trim()) return;
@@ -192,6 +277,18 @@ export function AppProvider({ children }) {
     if (statusMap[logType]) setStatuses(prev => ({ ...prev, [sel.id]: statusMap[logType] }));
   };
 
+  // Remove a single interaction-log entry by its index within the school's
+  // log list. Leaves the school's status untouched (status is set forward by
+  // addLog and not derivable from history, so we don't try to reconstruct it).
+  const deleteLogEntry = (schoolId, index) => {
+    setLogs(prev => {
+      const list = prev[schoolId];
+      if (!Array.isArray(list) || index < 0 || index >= list.length) return prev;
+      const next = list.slice(0, index).concat(list.slice(index + 1));
+      return { ...prev, [schoolId]: next };
+    });
+  };
+
   const value = {
     // data
     allSchools, visibleSchools, primarySchools, discoverySchools, hiddenSchools,
@@ -200,8 +297,10 @@ export function AppProvider({ children }) {
     // persisted state
     statuses, setStatuses, logs, setLogs, notes, setNotes,
     hiddenIds, sectionOverrides,
+    coachOverrides, deletedIds, schoolOrder,
     // helpers
     isHidden, getEffectiveSection, hideSchool, unhideSchool, moveToSection,
+    deleteSchool, undeleteSchool, reVerifyCoach, clearCoachOverride, reorderSchools,
     // ui state
     view, setView, sel, setSel,
     search, setSearch, divFilter, setDivFilter,
@@ -209,11 +308,11 @@ export function AppProvider({ children }) {
     logDate, setLogDate, logType, setLogType,
     showHidden, setShowHidden, openMenuId, setOpenMenuId,
     activeSection, setActiveSection,
-    sortBy, sortDir, toggleSort,
+    sortBy, setSortBy, sortDir, toggleSort,
     density, setDensity,
     openDiscovery, setOpenDiscovery,
     // handlers
-    handleAddSchool, navigate, goEmail, goGmail, goBack, addLog,
+    handleAddSchool, navigate, goEmail, goGmail, goBack, addLog, deleteLogEntry,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

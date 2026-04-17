@@ -1,6 +1,7 @@
 // netlify/functions/schools-load.js
-// Loads Parker's saved schools, statuses, logs, notes, hiddenIds, and sectionOverrides
-// from Netlify Blobs. No env vars or auth required — Netlify Blobs is built into the platform.
+// Loads Parker's saved schools, statuses, logs, notes, hiddenIds, sectionOverrides,
+// coachOverrides, deletedIds, and schoolOrder from Netlify Blobs. No env vars or
+// auth required — Netlify Blobs is built into the platform.
 
 import { getStore } from "@netlify/blobs";
 
@@ -18,6 +19,9 @@ export default async (req, context) => {
         notes: {},
         hiddenIds: [],
         sectionOverrides: {},
+        coachOverrides: {},
+        deletedIds: [],
+        schoolOrder: [],
       }), {
         status: 200,
         headers: { "Content-Type": "application/json" },
@@ -31,6 +35,9 @@ export default async (req, context) => {
       notes:            data.notes            || {},
       hiddenIds:        data.hiddenIds        || [],
       sectionOverrides: data.sectionOverrides || {},
+      coachOverrides:   data.coachOverrides   || {},
+      deletedIds:       data.deletedIds       || [],
+      schoolOrder:      data.schoolOrder      || [],
     }), {
       status: 200,
       headers: { "Content-Type": "application/json" },

@@ -1,22 +1,39 @@
 import React from 'react';
-import { MoreVertical, ChevronRight, ArrowUpCircle, ArrowDownCircle, EyeOff, Eye } from 'lucide-react';
+import { MoreVertical, ChevronRight, ArrowUpCircle, ArrowDownCircle, EyeOff, Eye, Trash2, GripVertical } from 'lucide-react';
 import { SchoolLogo } from './SchoolLogo.jsx';
 import { DivBadge, PriorityBadge, StatusBadge, NeedBadge } from './Badges.jsx';
 import { useApp } from '../context/AppContext.jsx';
 
-export const SchoolRow = ({ s }) => {
+export const SchoolRow = React.forwardRef(({ s, dragStyle, draggable, dragProps, ...rest }, ref) => {
   const {
     statuses, navigate, openMenuId, setOpenMenuId,
     getEffectiveSection, moveToSection, hideSchool, unhideSchool,
-    isHidden, density,
+    isHidden, density, deleteSchool,
   } = useApp();
   const sStatus = statuses[s.id] || "None";
   const py = density === 'compact' ? 'py-2' : 'py-4';
   const hidden = isHidden(s.id);
   return (
-    <tr onClick={() => navigate(s)} className="hover:bg-blue-50/30 cursor-pointer transition-colors group">
+    <tr
+      ref={ref}
+      onClick={() => navigate(s)}
+      className={`hover:bg-blue-50/30 cursor-pointer transition-colors group ${draggable ? 'select-none' : ''}`}
+      style={dragStyle}
+      {...rest}
+    >
       <td className={`px-5 ${py}`}>
         <div className="flex items-center gap-3">
+          {draggable && (
+            <span
+              {...(dragProps || {})}
+              onClick={(e) => e.stopPropagation()}
+              className="flex-shrink-0 p-1 -ml-1 rounded text-slate-300 hover:text-slate-500 hover:bg-slate-100 cursor-grab active:cursor-grabbing"
+              title="Drag to reorder"
+              aria-label="Drag to reorder"
+            >
+              <GripVertical className="w-4 h-4" />
+            </span>
+          )}
           <SchoolLogo school={s} size={density === 'compact' ? 'sm' : 'md'} />
           <div>
             <div className="flex items-center gap-2">
@@ -104,10 +121,24 @@ export const SchoolRow = ({ s }) => {
                   Hide School
                 </button>
               )}
+              <div className="border-t border-slate-100 my-1" />
+              <button
+                onClick={() => {
+                  setOpenMenuId(null);
+                  if (window.confirm(`Permanently remove ${s.name} from the hub?`)) {
+                    deleteSchool(s.id);
+                  }
+                }}
+                className="w-full flex items-center gap-2.5 px-4 py-2 text-xs font-bold uppercase tracking-wide text-rose-600 hover:bg-rose-50 transition-colors"
+              >
+                <Trash2 className="w-4 h-4" />
+                Delete School
+              </button>
             </div>
           )}
         </div>
       </td>
     </tr>
   );
-};
+});
+SchoolRow.displayName = 'SchoolRow';

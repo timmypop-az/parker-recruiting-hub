@@ -1,7 +1,8 @@
 // netlify/functions/schools-save.js
-// Saves Parker's schools, statuses, logs, notes, hiddenIds, and sectionOverrides
-// to Netlify Blobs.
-// Body shape: { schools: [...], statuses: {...}, logs: {...}, notes: {...}, hiddenIds: [...], sectionOverrides: {...} }
+// Saves Parker's schools, statuses, logs, notes, hiddenIds, sectionOverrides,
+// coachOverrides (re-verified coach records by school id), deletedIds (hard
+// deletes), and schoolOrder (manual drag-drop order) to Netlify Blobs.
+// Body shape: { schools, statuses, logs, notes, hiddenIds, sectionOverrides, coachOverrides, deletedIds, schoolOrder }
 
 import { getStore } from "@netlify/blobs";
 
@@ -27,6 +28,9 @@ export default async (req, context) => {
       notes:            body.notes            ?? existing.notes            ?? {},
       hiddenIds:        body.hiddenIds        ?? existing.hiddenIds        ?? [],
       sectionOverrides: body.sectionOverrides ?? existing.sectionOverrides ?? {},
+      coachOverrides:   body.coachOverrides   ?? existing.coachOverrides   ?? {},
+      deletedIds:       body.deletedIds       ?? existing.deletedIds       ?? [],
+      schoolOrder:      body.schoolOrder      ?? existing.schoolOrder      ?? [],
       updatedAt: new Date().toISOString(),
     };
 

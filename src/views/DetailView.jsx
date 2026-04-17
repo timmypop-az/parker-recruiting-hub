@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Send, Mail, ArrowLeft, Trophy, MapPin, TrendingUp,
   GraduationCap, Briefcase, Plane, Church, Zap, Users, Circle,
-  BookOpen, Instagram, Check,
+  BookOpen, Instagram, Check, ShieldCheck, Loader2, Trash2, AlertTriangle,
 } from 'lucide-react';
 import { SchoolLogo } from '../components/SchoolLogo.jsx';
 import { CoachCard } from '../components/CoachCard.jsx';
@@ -88,14 +88,47 @@ export function DetailView() {
   const {
     sel, statuses, setStatuses, notes, setNotes, logs,
     logDate, setLogDate, logType, setLogType,
-    addLog, goBack, goEmail, goGmail,
+    addLog, deleteLogEntry, goBack, goEmail, goGmail,
+    reVerifyCoach, deleteSchool, coachOverrides,
   } = useApp();
+  const [verifying, setVerifying] = useState(false);
+  const [verifyMsg, setVerifyMsg] = useState(null); // { kind: 'ok'|'err', text }
   if (!sel) return null;
 
   const schoolStatus = statuses[sel.id] || 'None';
   const statusIdx = STATUSES.findIndex(s => s.key === schoolStatus);
   const trend = getTrend(sel.winHistory);
   const schoolNotes = notes[sel.id] || sel.notes || '';
+  const overriddenCoach = coachOverrides?.[sel.id];
+
+  const handleReVerify = async () => {
+    if (!sel.vbUrl || sel.vbUrl === '#') {
+      setVerifyMsg({ kind: 'err', text: 'No volleyball URL set for this school.' });
+      return;
+    }
+    setVerifying(true);
+    setVerifyMsg(null);
+    try {
+      const rec = await reVerifyCoach(sel.id, sel.vbUrl);
+      setVerifyMsg({
+        kind: 'ok',
+        text: rec._titleConfirmed
+          ? `Verified: ${rec.name || rec.email} (Head Coach confirmed on page).`
+          : `Updated to first listed coach: ${rec.name || rec.email} (no explicit "Head Coach" label found).`,
+      });
+    } catch (err) {
+      setVerifyMsg({ kind: 'err', text: err.message || 'Verification failed.' });
+    } finally {
+      setVerifying(false);
+    }
+  };
+
+  const handleDelete = () => {
+    if (!window.confirm(`Permanently remove ${sel.name} from the hub?\n\nYour notes, logs, and status for this school will remain saved — if you re-add the school later, they'll reconnect by id. To just hide it instead, use the ⋯ menu on the schools list.`)) return;
+    const id = sel.id;
+    deleteSchool(id);
+    goBack();
+  };
 
   return (
     <div className="px-4 sm:px-6 lg:px-10 py-6 lg:py-8">
@@ -108,7 +141,16 @@ export function DetailView() {
         >
           <ArrowLeft className="w-4 h-4" /> Back to Schools
         </button>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            onClick={handleReVerify}
+            disabled={verifying}
+            title="Re-fetch the head coach from this school's own volleyball page"
+            className="flex items-center gap-2 bg-white hover:bg-slate-50 border border-slate-200 px-4 py-2 rounded-xl text-slate-700 text-xs font-bold uppercase tracking-wide transition-all disabled:opacity-60"
+          >
+            {verifying ? <Loader2 className="w-4 h-4 animate-spin text-blue-500" /> : <ShieldCheck className="w-4 h-4 text-emerald-500" />}
+            Re-verify Coach
+          </button>
           <button
             onClick={() => goEmail(sel)}
             className="flex items-center gap-2 bg-white hover:bg-slate-50 border border-slate-200 px-4 py-2 rounded-xl text-slate-700 text-xs font-bold uppercase tracking-wide transition-all"
@@ -121,8 +163,41 @@ export function DetailView() {
           >
             <Send className="w-4 h-4" /> Gmail Drafts
           </button>
+          <button
+            onClick={handleDelete}
+            title="Remove this school from the hub"
+            className="flex items-center gap-2 bg-white hover:bg-rose-50 border border-slate-200 hover:border-rose-200 px-3 py-2 rounded-xl text-slate-500 hover:text-rose-600 text-xs font-bold uppercase tracking-wide transition-all"
+            aria-label="Delete school"
+          >
+            <Trash2 className="w-4 h-4" />
+          </button>
         </div>
       </div>
+      {verifyMsg && (
+        <div
+          className={`mb-4 flex items-start gap-2 px-4 py-3 rounded-xl border text-sm ${
+            verifyMsg.kind === 'ok'
+              ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
+              : 'bg-rose-50 border-rose-200 text-rose-700'
+          }`}
+        >
+          {verifyMsg.kind === 'ok' ? (
+            <ShieldCheck className="w-4 h-4 flex-shrink-0 mt-0.5" />
+          ) : (
+            <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+          )}
+          <span className="leading-snug">{verifyMsg.text}</span>
+        </div>
+      )}
+      {overriddenCoach?._verified && !verifyMsg && (
+        <div className="mb-4 flex items-start gap-2 px-4 py-2 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs">
+          <ShieldCheck className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
+          <span>
+            Coach re-verified from <a href={overriddenCoach._sourceUrl} target="_blank" rel="noreferrer" className="underline hover:no-underline">the school's coaches page</a>
+            {overriddenCoach._titleConfirmed ? ' — "Head Coach" title confirmed.' : ' — fell back to first listed coach.'}
+          </span>
+        </div>
+      )}
 
       {/* EXECUTIVE SUMMARY (kept prominent — the "why") */}
       <ExecutiveSummary school={sel} />
@@ -452,10 +527,22 @@ export function DetailView() {
                   {(logs[sel.id] || []).map((entry, i) => (
                     <div
                       key={i}
-                      className="flex justify-between text-[11px] text-slate-400 border-t border-slate-800 pt-2"
+                      className="group flex items-center gap-2 text-[11px] text-slate-400 border-t border-slate-800 pt-2"
                     >
-                      <span className="font-semibold text-slate-300">{entry.type}</span>
-                      <span>{entry.date}</span>
+                      <span className="font-semibold text-slate-300 flex-1 min-w-0 truncate">{entry.type}</span>
+                      <span className="flex-shrink-0">{entry.date}</span>
+                      <button
+                        onClick={() => {
+                          if (window.confirm(`Remove "${entry.type}" on ${entry.date}?`)) {
+                            deleteLogEntry(sel.id, i);
+                          }
+                        }}
+                        className="flex-shrink-0 opacity-0 group-hover:opacity-100 focus:opacity-100 p-1 rounded hover:bg-slate-800 text-slate-500 hover:text-rose-400 transition-all"
+                        title="Delete this log entry"
+                        aria-label="Delete log entry"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </button>
                     </div>
                   ))}
                   {!(logs[sel.id]?.length) && (
