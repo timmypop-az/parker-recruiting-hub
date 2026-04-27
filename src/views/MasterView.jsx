@@ -49,7 +49,7 @@ function SortableHeader({ column, label, className = '' }) {
       <span className="inline-flex items-center gap-1">
         {label}
         {active ? (
-          sortDir === 'asc' ? <ChevronUp className="w-3 h-3 text-cc-navy" /> : <ChevronDown className="w-3 h-3 text-cc-navy" />
+          sortDir === 'asc' ? <ChevronUp className="w-3 h-3 text-cc-accent" /> : <ChevronDown className="w-3 h-3 text-cc-accent" />
         ) : (
           <span className="w-3 h-3 opacity-0" />
         )}
@@ -62,7 +62,7 @@ function StatsStrip() {
   const { allSchools, divCounts, contacted } = useApp();
   const cards = [
     { label: 'Total Programs', value: allSchools.length,                                  accent: 'text-cc-fg'        },
-    { label: 'D-I',            value: divCounts['DI'] || 0,                               accent: 'text-cc-navy'      },
+    { label: 'D-I',            value: divCounts['DI'] || 0,                               accent: 'text-cc-accent'      },
     { label: 'D-II / NAIA',    value: (divCounts['DII'] || 0) + (divCounts['NAIA'] || 0), accent: 'text-cc-purple'    },
     { label: 'D-III / JUCO',   value: (divCounts['DIII'] || 0) + (divCounts['JUCO'] || 0),accent: 'text-cc-forest'    },
     { label: 'Contacted',      value: contacted,                                          accent: 'text-cc-success'   },
@@ -84,7 +84,7 @@ function StatsStrip() {
 function SectionTabs() {
   const { activeSection, setActiveSection, primarySchools, discoverySchools, hiddenSchools } = useApp();
   const tabs = [
-    { id: 'primary',   label: 'Primary Targets',   icon: Target,  count: primarySchools.length,   accent: 'text-cc-navy'   },
+    { id: 'primary',   label: 'Primary Targets',   icon: Target,  count: primarySchools.length,   accent: 'text-cc-accent'   },
     { id: 'discovery', label: 'Discovery',         icon: Compass, count: discoverySchools.length, accent: 'text-cc-purple' },
     { id: 'hidden',    label: 'Hidden',            icon: EyeOff,  count: hiddenSchools.length,    accent: 'text-cc-faint'  },
   ];
@@ -98,14 +98,14 @@ function SectionTabs() {
             key={t.id}
             onClick={() => setActiveSection(t.id)}
             className={`flex items-center gap-2 px-4 py-3 text-cc-button font-display uppercase tracking-cc-wider transition-colors duration-cc-base border-b-2 -mb-px ${
-              active ? 'border-cc-navy text-cc-navy' : 'border-transparent text-cc-subtle hover:text-cc-fg'
+              active ? 'border-cc-accent text-cc-accent' : 'border-transparent text-cc-subtle hover:text-cc-fg'
             }`}
           >
             <Icon className={`w-4 h-4 ${active ? t.accent : 'text-cc-faint'}`} />
             <span>{t.label}</span>
             <span
               className={`text-[11px] font-bold px-1.5 py-0.5 rounded-cc-sm tabular ${
-                active ? 'bg-cc-accent-soft text-cc-navy' : 'bg-cc-bg text-cc-subtle'
+                active ? 'bg-cc-accent-soft text-cc-accent' : 'bg-cc-bg text-cc-subtle'
               }`}
             >
               {t.count}
@@ -198,7 +198,7 @@ function DiscoveryEngine() {
     return (
       <button
         onClick={() => setOpenDiscovery(true)}
-        className="inline-flex items-center gap-2 px-4 py-2.5 rounded-cc-sm bg-cc-navy text-white text-cc-button font-display uppercase tracking-cc-widest transition-colors duration-cc-base hover:bg-cc-navy-700 active:translate-y-px focus:outline-none focus:ring-2 focus:ring-cc-focus focus:ring-offset-2"
+        className="inline-flex items-center gap-2 px-4 py-2.5 rounded-cc-sm bg-cc-accent text-white text-cc-button font-display uppercase tracking-cc-widest transition-colors duration-cc-base hover:bg-cc-accent hover:opacity-90 active:translate-y-px focus:outline-none focus:ring-2 focus:ring-cc-focus focus:ring-offset-2"
       >
         <Sparkles className="w-4 h-4" />
         Discover a Program
@@ -239,7 +239,7 @@ function DiscoveryEngine() {
           <button
             onClick={handleAddSchool}
             disabled={isSearching}
-            className="bg-white text-cc-navy px-6 py-3 rounded-cc-sm font-display uppercase tracking-cc-widest text-cc-button flex items-center justify-center gap-2 hover:bg-cc-bg transition-colors disabled:opacity-60 flex-shrink-0"
+            className="bg-white text-cc-accent px-6 py-3 rounded-cc-sm font-display uppercase tracking-cc-widest text-cc-button flex items-center justify-center gap-2 hover:bg-cc-bg transition-colors disabled:opacity-60 flex-shrink-0"
           >
             {isSearching ? <Loader2 className="w-4 h-4 animate-spin" /> : <PlusCircle className="w-4 h-4" />}
             Add Program
@@ -268,7 +268,7 @@ function DensityToggle() {
       <button
         onClick={() => setDensity('comfortable')}
         className={`px-2.5 py-1.5 rounded-cc-sm text-xs font-bold transition-colors ${
-          density === 'comfortable' ? 'bg-cc-navy text-white' : 'text-cc-subtle hover:text-cc-fg'
+          density === 'comfortable' ? 'bg-cc-accent text-white' : 'text-cc-subtle hover:text-cc-fg'
         }`}
         title="Comfortable"
         aria-label="Comfortable density"
@@ -278,7 +278,7 @@ function DensityToggle() {
       <button
         onClick={() => setDensity('compact')}
         className={`px-2.5 py-1.5 rounded-cc-sm text-xs font-bold transition-colors ${
-          density === 'compact' ? 'bg-cc-navy text-white' : 'text-cc-subtle hover:text-cc-fg'
+          density === 'compact' ? 'bg-cc-accent text-white' : 'text-cc-subtle hover:text-cc-fg'
         }`}
         title="Compact"
         aria-label="Compact density"
@@ -372,7 +372,7 @@ export function MasterView() {
               onClick={() => setDivFilter(d)}
               className={`px-3 py-2 rounded-cc-sm text-xs font-bold uppercase tracking-cc-wider transition-colors duration-cc-base ${
                 divFilter === d
-                  ? 'bg-cc-navy text-white shadow-cc-card'
+                  ? 'bg-cc-accent text-white shadow-cc-card'
                   : 'bg-cc-surface text-cc-fg hover:bg-cc-bg border border-cc-border'
               }`}
             >
@@ -395,7 +395,7 @@ export function MasterView() {
           title={isCustom ? 'Click to return to column sorting' : 'Drag rows to reorder (desktop)'}
           className={`hidden md:inline-flex items-center gap-1.5 px-3 py-2 rounded-cc-sm text-xs font-bold uppercase tracking-cc-wider transition-colors duration-cc-base border ${
             isCustom
-              ? 'bg-cc-navy text-white border-cc-navy shadow-cc-card'
+              ? 'bg-cc-accent text-white border-cc-accent shadow-cc-card'
               : 'bg-cc-surface text-cc-fg border-cc-border hover:bg-cc-bg'
           }`}
         >
@@ -418,7 +418,7 @@ export function MasterView() {
           {/* Desktop table */}
           <div className="hidden md:block bg-cc-surface rounded-cc-lg shadow-cc-card border border-cc-border overflow-hidden">
             {isCustom && (
-              <div className="px-5 py-2.5 bg-cc-accent-soft border-b border-cc-border text-[11px] font-bold uppercase tracking-cc-widest text-cc-navy flex items-center gap-2">
+              <div className="px-5 py-2.5 bg-cc-accent-soft border-b border-cc-border text-[11px] font-bold uppercase tracking-cc-widest text-cc-accent flex items-center gap-2">
                 <Move className="w-3.5 h-3.5" />
                 Manual Order — drag any row to reorder. Click a row to open it.
               </div>
@@ -473,7 +473,7 @@ export function MasterView() {
       {/* RECRUITING CALENDAR */}
       <div className="bg-cc-surface rounded-cc-lg border border-cc-border shadow-cc-card p-5 sm:p-6">
         <div className="flex items-center gap-2 mb-4">
-          <Calendar className="text-cc-navy w-5 h-5" />
+          <Calendar className="text-cc-accent w-5 h-5" />
           <h3 className="font-display text-cc-fg uppercase tracking-cc-wide text-lg">
             Recruiting Calendar — Class of {PARKER.grad}
           </h3>

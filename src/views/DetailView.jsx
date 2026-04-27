@@ -20,7 +20,7 @@ function PipelineStepper({ schoolStatus, statusIdx, setStatuses, schoolId }) {
     <section className={`${SECTION_CARD} p-5 sm:p-6`}>
       <div className="flex flex-wrap items-center gap-3 mb-5">
         <div className="flex items-center gap-2">
-          <TrendingUp className="w-5 h-5 text-cc-navy" />
+          <TrendingUp className="w-5 h-5 text-cc-accent" />
           <h3 className={SECTION_HEADING}>Recruiting Pipeline</h3>
         </div>
         <div className="ml-auto flex items-center gap-2">
@@ -33,7 +33,7 @@ function PipelineStepper({ schoolStatus, statusIdx, setStatuses, schoolId }) {
       <div className="relative mb-4">
         <div className="h-1.5 rounded-full bg-cc-bg overflow-hidden">
           <div
-            className="h-full rounded-full bg-cc-navy transition-all duration-cc-base"
+            className="h-full rounded-full bg-cc-accent transition-all duration-cc-base"
             style={{
               width: `${Math.max(0, statusIdx) / (STATUSES.length - 1) * 100}%`,
             }}
@@ -52,9 +52,9 @@ function PipelineStepper({ schoolStatus, statusIdx, setStatuses, schoolId }) {
               onClick={() => setStatuses(prev => ({ ...prev, [schoolId]: s.key }))}
               className={`relative py-3 px-2 rounded-cc-md text-[11px] font-bold uppercase tracking-cc-wider transition-colors duration-cc-base border text-center ${
                 active
-                  ? 'border-cc-navy bg-cc-navy text-white shadow-cc-card'
+                  ? 'border-cc-accent bg-cc-accent text-white shadow-cc-card'
                   : complete
-                  ? 'border-cc-accent-soft bg-cc-accent-soft text-cc-navy'
+                  ? 'border-cc-accent-soft bg-cc-accent-soft text-cc-accent'
                   : 'border-cc-border bg-cc-surface text-cc-subtle hover:border-cc-border-strong hover:text-cc-fg'
               }`}
             >
@@ -62,9 +62,9 @@ function PipelineStepper({ schoolStatus, statusIdx, setStatuses, schoolId }) {
                 <span
                   className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-display tracking-cc-wide ${
                     active
-                      ? 'bg-white text-cc-navy'
+                      ? 'bg-white text-cc-accent'
                       : complete
-                      ? 'bg-cc-navy text-white'
+                      ? 'bg-cc-accent text-white'
                       : 'bg-cc-bg text-cc-faint'
                   }`}
                 >
@@ -144,7 +144,7 @@ export function DetailView() {
             title="Re-fetch the head coach from this school's own volleyball page"
             className="flex items-center gap-2 bg-cc-surface hover:bg-cc-bg border border-cc-border px-4 py-2 rounded-cc-sm text-cc-fg text-xs font-bold uppercase tracking-cc-wider transition-colors disabled:opacity-60"
           >
-            {verifying ? <Loader2 className="w-4 h-4 animate-spin text-cc-navy" /> : <ShieldCheck className="w-4 h-4 text-cc-success" />}
+            {verifying ? <Loader2 className="w-4 h-4 animate-spin text-cc-accent" /> : <ShieldCheck className="w-4 h-4 text-cc-success" />}
             Re-verify Coach
           </button>
           <button
@@ -155,7 +155,7 @@ export function DetailView() {
           </button>
           <button
             onClick={goGmail}
-            className="flex items-center gap-2 bg-cc-navy hover:bg-cc-navy-700 px-4 py-2 rounded-cc-sm text-white text-xs font-bold uppercase tracking-cc-wider transition-colors shadow-cc-card"
+            className="flex items-center gap-2 bg-cc-accent hover:bg-cc-accent hover:opacity-90 px-4 py-2 rounded-cc-sm text-white text-xs font-bold uppercase tracking-cc-wider transition-colors shadow-cc-card"
           >
             <Send className="w-4 h-4" /> Gmail Drafts
           </button>
@@ -218,11 +218,11 @@ export function DetailView() {
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-cc-muted">
               <span className="flex items-center gap-1"><MapPin className="w-3.5 h-3.5" /> {sel.city}, {sel.state}</span>
               <span className="font-semibold text-cc-fg">{sel.conference} Conference</span>
-              <a href={sel.url} target="_blank" rel="noreferrer" className="text-cc-light-blue hover:text-cc-navy hover:underline">
+              <a href={sel.url} target="_blank" rel="noreferrer" className="text-cc-light-blue hover:text-cc-accent hover:underline">
                 University Site ↗
               </a>
               {sel.vbUrl && sel.vbUrl !== '#' && (
-                <a href={sel.vbUrl} target="_blank" rel="noreferrer" className="text-cc-light-blue hover:text-cc-navy hover:underline">
+                <a href={sel.vbUrl} target="_blank" rel="noreferrer" className="text-cc-light-blue hover:text-cc-accent hover:underline">
                   VB Program ↗
                 </a>
               )}
@@ -268,7 +268,7 @@ export function DetailView() {
           {/* Academic Profile */}
           <div className={`${SECTION_CARD} p-6`}>
             <div className="flex items-center gap-2 mb-4">
-              <GraduationCap className="w-4 h-4 text-cc-navy" />
+              <GraduationCap className="w-4 h-4 text-cc-accent" />
               <h3 className={SECTION_HEADING}>Academic Fit</h3>
             </div>
             <div className="grid grid-cols-2 gap-3 mb-4">
@@ -290,7 +290,7 @@ export function DetailView() {
                 <div className="text-[11px] font-bold text-cc-subtle uppercase tracking-cc-widest mb-2">Top Programs</div>
                 <div className="flex flex-wrap gap-1.5">
                   {sel.academic.top10.map((m, i) => (
-                    <span key={i} className="px-2.5 py-1 bg-cc-accent-soft text-cc-navy rounded-full text-[11px] font-semibold">
+                    <span key={i} className="px-2.5 py-1 bg-cc-accent-soft text-cc-accent rounded-full text-[11px] font-semibold">
                       {m}
                     </span>
                   ))}
@@ -330,7 +330,7 @@ export function DetailView() {
                   <div
                     key={i}
                     className={`p-3 rounded-cc-md border-l-4 ${
-                      p.hs?.includes('Brophy') ? 'border-cc-navy bg-cc-accent-soft' : 'border-cc-orange bg-orange-50/60'
+                      p.hs?.includes('Brophy') ? 'border-cc-accent bg-cc-accent-soft' : 'border-cc-orange bg-orange-50/60'
                     }`}
                   >
                     <div className="flex items-center justify-between mb-1">
@@ -341,7 +341,7 @@ export function DetailView() {
                     </div>
                     <span
                       className={`text-[11px] font-semibold ${
-                        p.hs?.includes('Brophy') ? 'text-cc-navy' : 'text-cc-orange'
+                        p.hs?.includes('Brophy') ? 'text-cc-accent' : 'text-cc-orange'
                       }`}
                     >
                       {p.hs}
@@ -356,7 +356,7 @@ export function DetailView() {
           {(sel.setters?.length > 0) && (
             <div className={`${SECTION_CARD} p-6`}>
               <div className="flex items-center gap-2 mb-4">
-                <Users className="w-4 h-4 text-cc-navy" />
+                <Users className="w-4 h-4 text-cc-accent" />
                 <h3 className={SECTION_HEADING}>Setter Depth Chart</h3>
               </div>
               <div className="space-y-2">
@@ -432,7 +432,7 @@ export function DetailView() {
                     href={sel.questionnaireUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="flex items-center justify-center gap-2 py-4 rounded-cc-sm bg-cc-navy text-white text-sm font-display uppercase tracking-cc-widest hover:bg-cc-navy-700 transition-colors duration-cc-base"
+                    className="flex items-center justify-center gap-2 py-4 rounded-cc-sm bg-cc-accent text-white text-sm font-display uppercase tracking-cc-widest hover:bg-cc-accent hover:opacity-90 transition-colors duration-cc-base"
                   >
                     Fill Questionnaire ↗
                   </a>
@@ -478,7 +478,7 @@ export function DetailView() {
                 </select>
                 <button
                   onClick={addLog}
-                  className="w-full py-3 bg-white text-cc-navy rounded-cc-sm font-display text-sm uppercase tracking-cc-widest hover:bg-cc-bg transition-colors duration-cc-base"
+                  className="w-full py-3 bg-white text-cc-accent rounded-cc-sm font-display text-sm uppercase tracking-cc-widest hover:bg-cc-bg transition-colors duration-cc-base"
                 >
                   Log + Update Status
                 </button>
@@ -663,7 +663,7 @@ export function DetailView() {
                     className="block p-4 bg-cc-surface-alt rounded-cc-md hover:bg-cc-accent-soft border border-transparent hover:border-cc-border transition-colors duration-cc-base group"
                   >
                     <div className="text-[11px] font-bold text-cc-light-blue uppercase tracking-cc-wider mb-1">{n.date}</div>
-                    <div className="font-display text-cc-fg text-sm uppercase tracking-cc-wide group-hover:text-cc-navy">{n.title}</div>
+                    <div className="font-display text-cc-fg text-sm uppercase tracking-cc-wide group-hover:text-cc-accent">{n.title}</div>
                     <div className="text-xs text-cc-muted mt-1 leading-relaxed">{n.body}</div>
                   </a>
                 ))}

@@ -1,7 +1,8 @@
 import React from 'react';
-import { LayoutDashboard, Mail, Send, Settings, X, Sparkles } from 'lucide-react';
+import { LayoutDashboard, Mail, Send, Settings, X, Sparkles, Sun, Moon } from 'lucide-react';
 import { useApp } from '../context/AppContext.jsx';
 import { PARKER } from '../data/constants.js';
+import { useTheme } from '../lib/useTheme.js';
 
 const NAV_ITEMS = [
   { id: 'master',   label: 'Schools',         icon: LayoutDashboard, description: 'Program pipeline' },
@@ -12,6 +13,7 @@ const NAV_ITEMS = [
 
 export function Sidebar({ open, onClose }) {
   const { view, setView, allSchools, contacted, setOpenDiscovery } = useApp();
+  const { theme, toggle: toggleTheme } = useTheme();
 
   const isActive = (id) => {
     if (id === 'master') return view === 'master' || view === 'detail';
@@ -44,7 +46,7 @@ export function Sidebar({ open, onClose }) {
               className="w-10 h-10 flex-shrink-0"
             />
             <div className="min-w-0">
-              <div className="font-display uppercase text-cc-navy text-base leading-tight tracking-cc-wide truncate">
+              <div className="font-display uppercase text-cc-accent text-base leading-tight tracking-cc-wide truncate">
                 Campus Commit
               </div>
               <div className="text-[10px] text-cc-subtle font-semibold uppercase tracking-cc-widest">
@@ -52,8 +54,16 @@ export function Sidebar({ open, onClose }) {
               </div>
             </div>
             <button
+              onClick={toggleTheme}
+              className="ml-auto p-1.5 rounded-cc-sm hover:bg-cc-bg text-cc-muted hover:text-cc-fg transition-colors"
+              title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+              aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+            >
+              {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+            </button>
+            <button
               onClick={onClose}
-              className="ml-auto md:hidden p-1.5 rounded-cc-sm hover:bg-cc-bg text-cc-muted"
+              className="md:hidden p-1.5 rounded-cc-sm hover:bg-cc-bg text-cc-muted"
               aria-label="Close menu"
             >
               <X className="w-4 h-4" />
@@ -64,7 +74,7 @@ export function Sidebar({ open, onClose }) {
           <div className="px-3 pt-3">
             <button
               onClick={() => { setOpenDiscovery(true); handleNav('master'); }}
-              className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-cc-sm bg-cc-navy text-white text-cc-button font-display uppercase tracking-cc-widest transition-colors duration-cc-base hover:bg-cc-navy-700 active:translate-y-px focus:outline-none focus:ring-2 focus:ring-cc-focus focus:ring-offset-2"
+              className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-cc-sm bg-cc-accent text-white text-cc-button font-display uppercase tracking-cc-widest transition-colors duration-cc-base hover:bg-cc-accent hover:opacity-90 active:translate-y-px focus:outline-none focus:ring-2 focus:ring-cc-focus focus:ring-offset-2"
             >
               <Sparkles className="w-4 h-4" />
               <span>Discover a Program</span>
@@ -87,9 +97,9 @@ export function Sidebar({ open, onClose }) {
                     active ? 'bg-cc-accent-soft' : 'hover:bg-cc-bg'
                   }`}
                 >
-                  <Icon className={`w-4 h-4 flex-shrink-0 ${active ? 'text-cc-navy' : 'text-cc-faint'}`} />
+                  <Icon className={`w-4 h-4 flex-shrink-0 ${active ? 'text-cc-accent' : 'text-cc-faint'}`} />
                   <div className="min-w-0 flex-1">
-                    <div className={`font-display text-sm uppercase tracking-cc-wide leading-tight ${active ? 'text-cc-navy' : 'text-cc-fg'}`}>
+                    <div className={`font-display text-sm uppercase tracking-cc-wide leading-tight ${active ? 'text-cc-accent' : 'text-cc-fg'}`}>
                       {item.label}
                     </div>
                     <div className="text-[10px] text-cc-subtle truncate mt-0.5">{item.description}</div>
@@ -103,7 +113,7 @@ export function Sidebar({ open, onClose }) {
           <div className="px-3 pb-4">
             <div className="rounded-cc-lg p-3 border border-cc-border bg-cc-surface-alt">
               <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-full bg-cc-navy flex items-center justify-center text-white font-display text-sm tracking-cc-wide flex-shrink-0">
+                <div className="w-9 h-9 rounded-full bg-cc-accent flex items-center justify-center text-white font-display text-sm tracking-cc-wide flex-shrink-0">
                   {initials}
                 </div>
                 <div className="min-w-0">
@@ -115,7 +125,7 @@ export function Sidebar({ open, onClose }) {
               </div>
               <div className="mt-2.5 grid grid-cols-2 gap-1.5 text-center">
                 <div className="bg-cc-surface rounded-cc-sm py-1.5 border border-cc-border">
-                  <div className="display-num text-base text-cc-navy leading-none tabular">
+                  <div className="display-num text-base text-cc-accent leading-none tabular">
                     {allSchools.length}
                   </div>
                   <div className="text-[9px] text-cc-subtle uppercase tracking-cc-wider mt-0.5">Tracked</div>

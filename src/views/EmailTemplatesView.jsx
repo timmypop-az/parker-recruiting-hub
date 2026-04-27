@@ -29,7 +29,7 @@ export const EmailTemplatesView = ({ school, onBack }) => {
             Outreach Templates{school ? ` · ${school.name}` : ''}
           </div>
           <h1 className="font-display text-cc-fg text-cc-h2 leading-none mt-1 uppercase tracking-cc-wide">
-            Coach Outreach <span className="text-cc-navy">Email Templates</span>
+            Coach Outreach <span className="text-cc-accent">Email Templates</span>
           </h1>
           <p className="text-cc-muted text-cc-body mt-1">Pre-filled, personalized, copy-ready — three phases of coach outreach.</p>
         </div>
@@ -44,11 +44,11 @@ export const EmailTemplatesView = ({ school, onBack }) => {
       {/* STRATEGY BANNER */}
       <div className="rounded-cc-lg mb-6 p-6 border border-cc-border bg-cc-accent-soft">
         <div className="flex items-start gap-4">
-          <div className="w-10 h-10 rounded-cc-md bg-cc-navy flex items-center justify-center flex-shrink-0">
+          <div className="w-10 h-10 rounded-cc-md bg-cc-accent flex items-center justify-center flex-shrink-0">
             <FileText className="w-5 h-5 text-white" />
           </div>
           <div>
-            <div className="font-display text-cc-navy text-xl uppercase tracking-cc-wide mb-1">3-Phase Outreach Strategy</div>
+            <div className="font-display text-cc-accent text-xl uppercase tracking-cc-wide mb-1">3-Phase Outreach Strategy</div>
             <p className="text-cc-fg text-sm leading-relaxed mb-3">
               Coaches receive hundreds of emails. Consistent, personalized outreach across all three phases dramatically increases visibility.
               {school ? ` These templates are pre-filled for ${school.name}${school.coaches?.[0]?.name ? ` — Coach ${school.coaches[0].name.split(' ').slice(-1)[0]}` : ''}.` : ' Select a school from the dashboard to auto-fill coach names.'}
@@ -59,7 +59,7 @@ export const EmailTemplatesView = ({ school, onBack }) => {
                 { Icon: Trophy, text: 'Phase 2: Tournament invite → live eval' },
                 { Icon: Video,  text: 'Phase 3: New video → show growth' },
               ].map(({ Icon, text }, i) => (
-                <span key={i} className="inline-flex items-center gap-1.5 px-3 py-1 bg-cc-surface text-cc-navy text-xs font-semibold rounded-full border border-cc-border"><Icon className="w-3.5 h-3.5" /> {text}</span>
+                <span key={i} className="inline-flex items-center gap-1.5 px-3 py-1 bg-cc-surface text-cc-accent text-xs font-semibold rounded-full border border-cc-border"><Icon className="w-3.5 h-3.5" /> {text}</span>
               ))}
             </div>
           </div>
@@ -105,7 +105,7 @@ export const EmailTemplatesView = ({ school, onBack }) => {
               <label className="text-[11px] font-bold text-cc-subtle uppercase tracking-cc-widest">Subject Line</label>
               <button
                 onClick={() => copy(getSubject(activeTab), `subj-${activeTab}`)}
-                className="flex items-center gap-1.5 text-[11px] font-bold text-cc-muted hover:text-cc-navy px-2 py-1 rounded-cc-sm hover:bg-cc-accent-soft transition-colors"
+                className="flex items-center gap-1.5 text-[11px] font-bold text-cc-muted hover:text-cc-accent px-2 py-1 rounded-cc-sm hover:bg-cc-accent-soft transition-colors"
               >
                 {copied === `subj-${activeTab}` ? <Check className="w-3 h-3 text-cc-success" /> : <Copy className="w-3 h-3" />}
                 {copied === `subj-${activeTab}` ? 'Copied!' : 'Copy'}
@@ -123,7 +123,7 @@ export const EmailTemplatesView = ({ school, onBack }) => {
               <label className="text-[11px] font-bold text-cc-subtle uppercase tracking-cc-widest">Email Body</label>
               <button
                 onClick={() => copy(getBody(activeTab), `body-${activeTab}`)}
-                className="flex items-center gap-1.5 text-[11px] font-bold text-cc-muted hover:text-cc-navy px-2 py-1 rounded-cc-sm hover:bg-cc-accent-soft transition-colors"
+                className="flex items-center gap-1.5 text-[11px] font-bold text-cc-muted hover:text-cc-accent px-2 py-1 rounded-cc-sm hover:bg-cc-accent-soft transition-colors"
               >
                 {copied === `body-${activeTab}` ? <Check className="w-3 h-3 text-cc-success" /> : <Copy className="w-3 h-3" />}
                 {copied === `body-${activeTab}` ? 'Copied!' : 'Copy Body'}
@@ -148,7 +148,7 @@ export const EmailTemplatesView = ({ school, onBack }) => {
             {school?.coaches?.[0]?.email && (
               <a
                 href={`mailto:${school.coaches[0].email}?subject=${encodeURIComponent(getSubject(activeTab))}&body=${encodeURIComponent(getBody(activeTab))}`}
-                className="flex items-center gap-2 px-6 py-3 rounded-cc-sm font-display text-sm uppercase tracking-cc-widest bg-cc-fg hover:bg-cc-navy text-white transition-colors duration-cc-base"
+                className="flex items-center gap-2 px-6 py-3 rounded-cc-sm font-display text-sm uppercase tracking-cc-widest bg-cc-fg hover:bg-cc-accent text-white transition-colors duration-cc-base"
               >
                 <Mail className="w-4 h-4" /> Open in Mail App
               </a>

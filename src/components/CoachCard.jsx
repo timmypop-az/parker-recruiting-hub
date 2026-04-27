@@ -20,7 +20,7 @@ export const CoachCard = ({ coach, schoolId }) => {
               onError={() => setImgFailed(true)}
             />
           ) : (
-            <div className="w-full h-full bg-cc-navy flex items-center justify-center">
+            <div className="w-full h-full bg-cc-accent flex items-center justify-center">
               <span className="text-white font-display text-lg tracking-cc-wide">{initials}</span>
             </div>
           )}
@@ -32,7 +32,7 @@ export const CoachCard = ({ coach, schoolId }) => {
             <span className="text-[9px] bg-cc-bg text-cc-muted font-bold px-2 py-0.5 rounded-cc-sm uppercase tracking-cc-wider flex-shrink-0">{coach.role}</span>
           </div>
           {coach.email && (
-            <a href={`mailto:${coach.email}`} className="flex items-center gap-1 text-xs text-cc-light-blue hover:text-cc-navy hover:underline mt-1">
+            <a href={`mailto:${coach.email}`} className="flex items-center gap-1 text-xs text-cc-light-blue hover:text-cc-accent hover:underline mt-1">
               <Mail className="w-3 h-3 flex-shrink-0" />
               <span className="truncate">{coach.email}</span>
             </a>

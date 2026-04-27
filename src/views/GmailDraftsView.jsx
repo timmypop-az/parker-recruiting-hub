@@ -81,7 +81,7 @@ export const GmailDraftsView = ({ allSchools, onBack }) => {
   const doneCount = Object.values(results).filter(v => v === 'done').length;
   const errorCount = Object.values(results).filter(v => v === 'error').length;
   const phaseLabels = { intro: 'Phase 1 — Introductory', tournament: 'Phase 2 — Tournament Invite', video: 'Phase 3 — Highlight Video' };
-  const phaseColors = { intro: 'bg-cc-navy', tournament: 'bg-cc-forest', video: 'bg-cc-purple' };
+  const phaseColors = { intro: 'bg-cc-accent', tournament: 'bg-cc-forest', video: 'bg-cc-purple' };
 
   return (
     <div className="px-4 sm:px-6 lg:px-10 py-6 lg:py-8 max-w-4xl">
@@ -93,7 +93,7 @@ export const GmailDraftsView = ({ allSchools, onBack }) => {
             Outreach Automation
           </div>
           <h1 className="font-display text-cc-fg text-cc-h2 leading-none mt-1 uppercase tracking-cc-wide">
-            Gmail <span className="text-cc-navy">Draft Creator</span>
+            Gmail <span className="text-cc-accent">Draft Creator</span>
           </h1>
           <p className="text-cc-muted text-cc-body mt-1">Create personalized drafts for every coach on your list in one click.</p>
         </div>
@@ -130,7 +130,7 @@ export const GmailDraftsView = ({ allSchools, onBack }) => {
         {!status.loading && !status.connected && (
           <div className={`${SECTION_CARD} p-6`}>
             <div className="flex items-center gap-3 mb-3">
-              <div className="w-8 h-8 rounded-full bg-cc-navy text-white flex items-center justify-center font-display text-sm tracking-cc-wide">1</div>
+              <div className="w-8 h-8 rounded-full bg-cc-accent text-white flex items-center justify-center font-display text-sm tracking-cc-wide">1</div>
               <h2 className="font-display text-cc-fg text-lg uppercase tracking-cc-wide">Connect Gmail</h2>
             </div>
             <p className="text-sm text-cc-muted mb-5 leading-relaxed">
@@ -138,7 +138,7 @@ export const GmailDraftsView = ({ allSchools, onBack }) => {
             </p>
             <button
               onClick={connect}
-              className="flex items-center gap-2 px-6 py-3 bg-cc-navy hover:bg-cc-navy-700 text-white rounded-cc-sm font-display text-sm uppercase tracking-cc-widest transition-colors duration-cc-base"
+              className="flex items-center gap-2 px-6 py-3 bg-cc-accent hover:bg-cc-accent hover:opacity-90 text-white rounded-cc-sm font-display text-sm uppercase tracking-cc-widest transition-colors duration-cc-base"
             >
               <Mail className="w-4 h-4" /> Connect Gmail Account
             </button>
@@ -161,7 +161,7 @@ export const GmailDraftsView = ({ allSchools, onBack }) => {
             {/* PHASE SELECTOR */}
             <div className={`${SECTION_CARD} p-6`}>
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-8 h-8 rounded-full bg-cc-navy text-white flex items-center justify-center font-display text-sm tracking-cc-wide">1</div>
+                <div className="w-8 h-8 rounded-full bg-cc-accent text-white flex items-center justify-center font-display text-sm tracking-cc-wide">1</div>
                 <h2 className="font-display text-cc-fg text-lg uppercase tracking-cc-wide">Choose Email Phase</h2>
               </div>
               <div className="flex gap-3">
@@ -185,7 +185,7 @@ export const GmailDraftsView = ({ allSchools, onBack }) => {
             <div className={`${SECTION_CARD} p-6`}>
               <div className="flex items-center justify-between mb-5">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-cc-navy text-white flex items-center justify-center font-display text-sm tracking-cc-wide">2</div>
+                  <div className="w-8 h-8 rounded-full bg-cc-accent text-white flex items-center justify-center font-display text-sm tracking-cc-wide">2</div>
                   <div>
                     <h2 className="font-display text-cc-fg text-lg uppercase tracking-cc-wide">Create Drafts</h2>
                     <p className="text-xs text-cc-subtle mt-0.5">{schoolsWithEmail.length} schools with coach emails · {phaseLabels[draftPhase]}</p>
@@ -194,7 +194,7 @@ export const GmailDraftsView = ({ allSchools, onBack }) => {
                 <button
                   onClick={runAllDrafts}
                   disabled={isRunning}
-                  className="flex items-center gap-2 px-6 py-3 bg-cc-navy hover:bg-cc-navy-700 disabled:opacity-50 text-white rounded-cc-sm font-display text-sm uppercase tracking-cc-widest transition-colors duration-cc-base"
+                  className="flex items-center gap-2 px-6 py-3 bg-cc-accent hover:bg-cc-accent hover:opacity-90 disabled:opacity-50 text-white rounded-cc-sm font-display text-sm uppercase tracking-cc-widest transition-colors duration-cc-base"
                 >
                   {isRunning ? <Loader2 className="w-4 h-4 animate-spin" /> : <Mail className="w-4 h-4" />}
                   {isRunning ? 'Creating drafts…' : `Create All ${schoolsWithEmail.length} Drafts`}
@@ -208,7 +208,7 @@ export const GmailDraftsView = ({ allSchools, onBack }) => {
                   <span className="text-cc-subtle text-sm tabular">{Object.keys(results).length} / {schoolsWithEmail.length} processed</span>
                   {!isRunning && doneCount > 0 && (
                     <a href="https://mail.google.com/mail/u/0/#drafts" target="_blank" rel="noreferrer"
-                      className="ml-auto text-cc-navy font-bold text-xs hover:underline uppercase tracking-cc-wider">
+                      className="ml-auto text-cc-accent font-bold text-xs hover:underline uppercase tracking-cc-wider">
                       Open Gmail Drafts ↗
                     </a>
                   )}
@@ -235,7 +235,7 @@ export const GmailDraftsView = ({ allSchools, onBack }) => {
                       <div className="text-[11px] font-bold flex-shrink-0 uppercase tracking-cc-wider">
                         {s === 'done'    && <span className="inline-flex items-center gap-1 text-cc-forest bg-emerald-100 px-2 py-1 rounded-full"><Check className="w-3 h-3" /> Draft Created</span>}
                         {s === 'error'   && <span className="inline-flex items-center gap-1 text-cc-maroon bg-rose-100 px-2 py-1 rounded-full"><X className="w-3 h-3" /> Error — Retry</span>}
-                        {s === 'pending' && <span className="text-cc-navy bg-cc-accent-soft px-2 py-1 rounded-full flex items-center gap-1"><Loader2 className="w-3 h-3 animate-spin inline" /> Creating…</span>}
+                        {s === 'pending' && <span className="text-cc-accent bg-cc-accent-soft px-2 py-1 rounded-full flex items-center gap-1"><Loader2 className="w-3 h-3 animate-spin inline" /> Creating…</span>}
                         {s === 'skipped' && <span className="text-cc-subtle bg-cc-bg px-2 py-1 rounded-full">No Email</span>}
                         {!s && <span className="text-cc-subtle bg-cc-surface-alt px-2 py-1 rounded-full border border-cc-border">Queued</span>}
                       </div>
@@ -251,7 +251,7 @@ export const GmailDraftsView = ({ allSchools, onBack }) => {
                 <div className="font-display text-3xl uppercase tracking-cc-wide mb-1">All {doneCount} drafts created</div>
                 <p className="text-white/70 text-sm mb-4">Head to Gmail Drafts, personalize the [INSERT] fields in each email, then send when ready.</p>
                 <a href="https://mail.google.com/mail/u/0/#drafts" target="_blank" rel="noreferrer"
-                  className="inline-flex items-center gap-2 bg-white text-cc-navy px-6 py-3 rounded-cc-sm font-display text-sm uppercase tracking-cc-widest hover:bg-cc-bg transition-colors duration-cc-base">
+                  className="inline-flex items-center gap-2 bg-white text-cc-accent px-6 py-3 rounded-cc-sm font-display text-sm uppercase tracking-cc-widest hover:bg-cc-bg transition-colors duration-cc-base">
                   <Mail className="w-4 h-4" /> Open Gmail Drafts ↗
                 </a>
               </div>

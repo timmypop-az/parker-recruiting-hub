@@ -23,7 +23,7 @@ export const STATUSES = [
 ];
 
 export const DIV_CONFIG = {
-  "DI":   { label: "D-I",   bg: "bg-cc-navy",       text: "text-white" },
+  "DI":   { label: "D-I",   bg: "bg-cc-accent",       text: "text-white" },
   "DII":  { label: "D-II",  bg: "bg-cc-purple",     text: "text-white" },
   "DIII": { label: "D-III", bg: "bg-cc-forest",     text: "text-white" },
   "NAIA": { label: "NAIA",  bg: "bg-cc-orange",     text: "text-white" },

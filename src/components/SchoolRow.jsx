@@ -37,7 +37,7 @@ export const SchoolRow = React.forwardRef(({ s, dragStyle, draggable, dragProps,
           <SchoolLogo school={s} size={density === 'compact' ? 'sm' : 'md'} />
           <div>
             <div className="flex items-center gap-2">
-              <span className={`font-display uppercase tracking-cc-wide text-cc-fg group-hover:text-cc-navy transition-colors ${density === 'compact' ? 'text-xs' : 'text-sm'}`}>{s.name}</span>
+              <span className={`font-display uppercase tracking-cc-wide text-cc-fg group-hover:text-cc-accent transition-colors ${density === 'compact' ? 'text-xs' : 'text-sm'}`}>{s.name}</span>
               <PriorityBadge priority={s.priority} />
             </div>
             <div className="text-[11px] text-cc-subtle">
@@ -48,7 +48,7 @@ export const SchoolRow = React.forwardRef(({ s, dragStyle, draggable, dragProps,
                   {s.coaches[0].email && (
                     <a
                       href={`mailto:${s.coaches[0].email}`}
-                      className="ml-1 text-cc-light-blue hover:text-cc-navy hover:underline"
+                      className="ml-1 text-cc-light-blue hover:text-cc-accent hover:underline"
                       onClick={e => e.stopPropagation()}
                     >
                       {s.coaches[0].email}
@@ -79,7 +79,7 @@ export const SchoolRow = React.forwardRef(({ s, dragStyle, draggable, dragProps,
           >
             <MoreVertical className="w-4 h-4" />
           </button>
-          <ChevronRight className="w-4 h-4 text-cc-faint group-hover:text-cc-navy transition-colors" />
+          <ChevronRight className="w-4 h-4 text-cc-faint group-hover:text-cc-accent transition-colors" />
           {openMenuId === s.id && (
             <div
               onClick={(e) => e.stopPropagation()}
@@ -88,9 +88,9 @@ export const SchoolRow = React.forwardRef(({ s, dragStyle, draggable, dragProps,
               {!hidden && getEffectiveSection(s) !== "primary" && (
                 <button
                   onClick={() => { moveToSection(s.id, "primary"); setOpenMenuId(null); }}
-                  className="w-full flex items-center gap-2.5 px-4 py-2 text-xs font-bold uppercase tracking-cc-wider text-cc-fg hover:bg-cc-accent-soft hover:text-cc-navy transition-colors"
+                  className="w-full flex items-center gap-2.5 px-4 py-2 text-xs font-bold uppercase tracking-cc-wider text-cc-fg hover:bg-cc-accent-soft hover:text-cc-accent transition-colors"
                 >
-                  <ArrowUpCircle className="w-4 h-4 text-cc-navy" />
+                  <ArrowUpCircle className="w-4 h-4 text-cc-accent" />
                   Move to Primary
                 </button>
               )}
@@ -107,9 +107,9 @@ export const SchoolRow = React.forwardRef(({ s, dragStyle, draggable, dragProps,
               {hidden ? (
                 <button
                   onClick={() => { unhideSchool(s.id); setOpenMenuId(null); }}
-                  className="w-full flex items-center gap-2.5 px-4 py-2 text-xs font-bold uppercase tracking-cc-wider text-cc-fg hover:bg-cc-accent-soft hover:text-cc-navy transition-colors"
+                  className="w-full flex items-center gap-2.5 px-4 py-2 text-xs font-bold uppercase tracking-cc-wider text-cc-fg hover:bg-cc-accent-soft hover:text-cc-accent transition-colors"
                 >
-                  <Eye className="w-4 h-4 text-cc-navy" />
+                  <Eye className="w-4 h-4 text-cc-accent" />
                   Restore School
                 </button>
               ) : (
