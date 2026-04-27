@@ -109,8 +109,8 @@ export const GmailDraftsView = ({ allSchools, onBack }) => {
       {authMessage && (
         <div className={`mb-4 px-5 py-3 rounded-cc-md border text-sm font-semibold flex items-center gap-2 ${
           authMessage.kind === 'success'
-            ? 'bg-emerald-50 border-emerald-200 text-cc-forest'
-            : 'bg-rose-50 border-rose-200 text-cc-maroon'
+            ? 'bg-emerald-50 dark:bg-emerald-500/15 border-emerald-200 dark:border-emerald-500/30 text-cc-forest'
+            : 'bg-rose-50 dark:bg-rose-500/15 border-rose-200 dark:border-rose-500/30 text-cc-maroon'
         }`}>
           {authMessage.kind === 'success' ? <Check className="w-4 h-4" /> : <X className="w-4 h-4" />}
           <span>{authMessage.text}</span>
@@ -148,7 +148,7 @@ export const GmailDraftsView = ({ allSchools, onBack }) => {
         {/* CONNECTED */}
         {!status.loading && status.connected && (
           <>
-            <div className="flex items-center gap-3 bg-emerald-50 border border-emerald-200 rounded-cc-md px-5 py-3">
+            <div className="flex items-center gap-3 bg-emerald-50 dark:bg-emerald-500/15 border border-emerald-200 dark:border-emerald-500/30 rounded-cc-md px-5 py-3">
               <Check className="w-5 h-5 text-cc-success flex-shrink-0" />
               <span className="text-cc-forest font-bold text-sm">
                 Gmail connected{status.connectedAt ? ` · ${new Date(status.connectedAt).toLocaleDateString()}` : ''}
@@ -221,8 +221,8 @@ export const GmailDraftsView = ({ allSchools, onBack }) => {
                   const to = school.coaches?.[0]?.email || '';
                   return (
                     <div key={school.id} className={`flex items-center gap-3 px-4 py-3 rounded-cc-md border transition-all ${
-                      s === 'done'    ? 'bg-emerald-50 border-emerald-200' :
-                      s === 'error'   ? 'bg-rose-50 border-rose-200' :
+                      s === 'done'    ? 'bg-emerald-50 dark:bg-emerald-500/15 border-emerald-200 dark:border-emerald-500/30' :
+                      s === 'error'   ? 'bg-rose-50 dark:bg-rose-500/15 border-rose-200 dark:border-rose-500/30' :
                       s === 'pending' ? 'bg-cc-accent-soft border-cc-border' :
                       s === 'skipped' ? 'bg-cc-surface-alt border-cc-border opacity-50' :
                       'bg-cc-surface border-cc-border'
@@ -233,8 +233,8 @@ export const GmailDraftsView = ({ allSchools, onBack }) => {
                         <div className="text-[11px] text-cc-subtle truncate">To: {to || 'No email on file'}</div>
                       </div>
                       <div className="text-[11px] font-bold flex-shrink-0 uppercase tracking-cc-wider">
-                        {s === 'done'    && <span className="inline-flex items-center gap-1 text-cc-forest bg-emerald-100 px-2 py-1 rounded-full"><Check className="w-3 h-3" /> Draft Created</span>}
-                        {s === 'error'   && <span className="inline-flex items-center gap-1 text-cc-maroon bg-rose-100 px-2 py-1 rounded-full"><X className="w-3 h-3" /> Error — Retry</span>}
+                        {s === 'done'    && <span className="inline-flex items-center gap-1 text-cc-forest bg-emerald-100 dark:bg-emerald-500/20 px-2 py-1 rounded-full"><Check className="w-3 h-3" /> Draft Created</span>}
+                        {s === 'error'   && <span className="inline-flex items-center gap-1 text-cc-maroon bg-rose-100 dark:bg-rose-500/20 px-2 py-1 rounded-full"><X className="w-3 h-3" /> Error — Retry</span>}
                         {s === 'pending' && <span className="text-cc-accent bg-cc-accent-soft px-2 py-1 rounded-full flex items-center gap-1"><Loader2 className="w-3 h-3 animate-spin inline" /> Creating…</span>}
                         {s === 'skipped' && <span className="text-cc-subtle bg-cc-bg px-2 py-1 rounded-full">No Email</span>}
                         {!s && <span className="text-cc-subtle bg-cc-surface-alt px-2 py-1 rounded-full border border-cc-border">Queued</span>}

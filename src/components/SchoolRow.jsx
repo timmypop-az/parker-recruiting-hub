@@ -97,7 +97,7 @@ export const SchoolRow = React.forwardRef(({ s, dragStyle, draggable, dragProps,
               {!hidden && getEffectiveSection(s) !== "discovery" && (
                 <button
                   onClick={() => { moveToSection(s.id, "discovery"); setOpenMenuId(null); }}
-                  className="w-full flex items-center gap-2.5 px-4 py-2 text-xs font-bold uppercase tracking-cc-wider text-cc-fg hover:bg-purple-50 hover:text-cc-purple transition-colors"
+                  className="w-full flex items-center gap-2.5 px-4 py-2 text-xs font-bold uppercase tracking-cc-wider text-cc-fg hover:bg-purple-50 dark:bg-purple-500/15 hover:text-cc-purple transition-colors"
                 >
                   <ArrowDownCircle className="w-4 h-4 text-cc-purple" />
                   Move to Discovery
@@ -115,7 +115,7 @@ export const SchoolRow = React.forwardRef(({ s, dragStyle, draggable, dragProps,
               ) : (
                 <button
                   onClick={() => { hideSchool(s.id); setOpenMenuId(null); }}
-                  className="w-full flex items-center gap-2.5 px-4 py-2 text-xs font-bold uppercase tracking-cc-wider text-cc-fg hover:bg-rose-50 hover:text-cc-maroon transition-colors"
+                  className="w-full flex items-center gap-2.5 px-4 py-2 text-xs font-bold uppercase tracking-cc-wider text-cc-fg hover:bg-rose-50 dark:bg-rose-500/15 hover:text-cc-maroon transition-colors"
                 >
                   <EyeOff className="w-4 h-4 text-cc-maroon" />
                   Hide School
@@ -129,7 +129,7 @@ export const SchoolRow = React.forwardRef(({ s, dragStyle, draggable, dragProps,
                     deleteSchool(s.id);
                   }
                 }}
-                className="w-full flex items-center gap-2.5 px-4 py-2 text-xs font-bold uppercase tracking-cc-wider text-cc-danger hover:bg-rose-50 transition-colors"
+                className="w-full flex items-center gap-2.5 px-4 py-2 text-xs font-bold uppercase tracking-cc-wider text-cc-danger hover:bg-rose-50 dark:bg-rose-500/15 transition-colors"
               >
                 <Trash2 className="w-4 h-4" />
                 Delete School

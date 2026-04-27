@@ -33,7 +33,7 @@ export const buildTemplate = (id, school) => {
 // purple for the creative/follow-up video phase.
 export const COLOR_MAP = {
   blue:    { badge: 'bg-cc-accent',   light: 'bg-cc-accent-soft border-cc-border text-cc-accent', btn: 'bg-cc-accent hover:bg-cc-accent hover:opacity-90 text-white' },
-  emerald: { badge: 'bg-cc-forest', light: 'bg-emerald-50 border-emerald-200 text-cc-forest', btn: 'bg-cc-forest hover:bg-emerald-700 text-white' },
-  purple:  { badge: 'bg-cc-purple', light: 'bg-purple-50 border-purple-200 text-cc-purple',   btn: 'bg-cc-purple hover:bg-purple-700 text-white' },
+  emerald: { badge: 'bg-cc-forest', light: 'bg-emerald-50 dark:bg-emerald-500/15 border-emerald-200 dark:border-emerald-500/30 text-cc-forest', btn: 'bg-cc-forest hover:bg-emerald-700 text-white' },
+  purple:  { badge: 'bg-cc-purple', light: 'bg-purple-50 dark:bg-purple-500/15 border-purple-200 dark:border-purple-500/30 text-cc-purple',   btn: 'bg-cc-purple hover:bg-purple-700 text-white' },
 };
 

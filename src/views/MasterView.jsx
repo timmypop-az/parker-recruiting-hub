@@ -123,10 +123,10 @@ function AddResultBanner() {
 
   const { kind, text, school, interpretation, placedSection, verified } = addResult;
   const styles = {
-    success:        { bg: 'bg-emerald-50/10 border-emerald-300/40', Icon: CheckCircle2,   iconColor: 'text-emerald-300' },
-    duplicate:      { bg: 'bg-amber-50/10 border-amber-300/40',     Icon: Info,           iconColor: 'text-amber-300'   },
-    not_volleyball: { bg: 'bg-amber-50/10 border-amber-300/40',     Icon: AlertTriangle,  iconColor: 'text-amber-300'   },
-    error:          { bg: 'bg-rose-50/10 border-rose-300/40',       Icon: AlertTriangle,  iconColor: 'text-rose-300'    },
+    success:        { bg: 'bg-emerald-50 dark:bg-emerald-500/15/10 border-emerald-300 dark:border-emerald-500/40/40', Icon: CheckCircle2,   iconColor: 'text-emerald-300' },
+    duplicate:      { bg: 'bg-amber-50 dark:bg-amber-500/15/10 border-amber-300 dark:border-amber-500/40/40',     Icon: Info,           iconColor: 'text-amber-300'   },
+    not_volleyball: { bg: 'bg-amber-50 dark:bg-amber-500/15/10 border-amber-300 dark:border-amber-500/40/40',     Icon: AlertTriangle,  iconColor: 'text-amber-300'   },
+    error:          { bg: 'bg-rose-50 dark:bg-rose-500/15/10 border-rose-300 dark:border-rose-500/40/40',       Icon: AlertTriangle,  iconColor: 'text-rose-300'    },
   }[kind] || { bg: 'bg-white/10 border-white/20', Icon: Info, iconColor: 'text-cc-gold' };
   const { bg, Icon, iconColor } = styles;
 
@@ -480,10 +480,10 @@ export function MasterView() {
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           {[
-            { when: 'Now — 2027',    what: 'Contact coaches, fill questionnaires, attend camps/clinics. AZ Fear 17s visibility is key.', border: 'border-cc-light-blue', bg: 'bg-sky-50',     iconColor: 'text-cc-light-blue', Icon: Inbox },
-            { when: 'June 15, 2026', what: 'D-I coaches may now initiate contact with Parker (Sophomore year — critical window)',       border: 'border-cc-warning',    bg: 'bg-amber-50',   iconColor: 'text-cc-warning',    Icon: Phone },
-            { when: 'Nov 2028',      what: 'Early National Signing Period (D-I only) opens — target offer by this date',                border: 'border-cc-purple',     bg: 'bg-purple-50',  iconColor: 'text-cc-purple',     Icon: PenLine },
-            { when: 'Feb 2028',      what: 'National Signing Day — final letters of intent due',                                        border: 'border-cc-forest',     bg: 'bg-emerald-50', iconColor: 'text-cc-forest',     Icon: Trophy },
+            { when: 'Now — 2027',    what: 'Contact coaches, fill questionnaires, attend camps/clinics. AZ Fear 17s visibility is key.', border: 'border-cc-light-blue', bg: 'bg-sky-50 dark:bg-sky-500/15',     iconColor: 'text-cc-light-blue', Icon: Inbox },
+            { when: 'June 15, 2026', what: 'D-I coaches may now initiate contact with Parker (Sophomore year — critical window)',       border: 'border-cc-warning',    bg: 'bg-amber-50 dark:bg-amber-500/15',   iconColor: 'text-cc-warning',    Icon: Phone },
+            { when: 'Nov 2028',      what: 'Early National Signing Period (D-I only) opens — target offer by this date',                border: 'border-cc-purple',     bg: 'bg-purple-50 dark:bg-purple-500/15',  iconColor: 'text-cc-purple',     Icon: PenLine },
+            { when: 'Feb 2028',      what: 'National Signing Day — final letters of intent due',                                        border: 'border-cc-forest',     bg: 'bg-emerald-50 dark:bg-emerald-500/15', iconColor: 'text-cc-forest',     Icon: Trophy },
           ].map((item, i) => {
             const Icon = item.Icon;
             return (

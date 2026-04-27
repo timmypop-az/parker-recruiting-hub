@@ -8,3 +8,20 @@
 
 * { box-sizing: border-box; }
 body { margin: 0; padding: 0; }
+
+/* ─── DARK-MODE TEXT BRIGHTENING ──────────────────────────────────────────────
+   The cc tagging accents (forest #167A4E, maroon #8B1E32, purple #5E33A1,
+   orange #F07216, light-blue #2E92F5) and the semantic state colors
+   (success/warning/danger) are saturated dark hues that disappear against the
+   #04112A dark canvas. In dark mode, shift them to the matching Tailwind 300
+   tints so they pop on dark surfaces and translucent colored backgrounds.
+   This runs after Tailwind utilities so it wins on specificity. */
+[data-theme="dark"] .text-cc-forest     { color: #6EE7B7; }   /* emerald-300 */
+[data-theme="dark"] .text-cc-maroon     { color: #FDA4AF; }   /* rose-300 */
+[data-theme="dark"] .text-cc-purple     { color: #C4B5FD; }   /* violet-300 */
+[data-theme="dark"] .text-cc-orange     { color: #FDBA74; }   /* orange-300 */
+[data-theme="dark"] .text-cc-light-blue { color: #93C5FD; }   /* blue-300 */
+[data-theme="dark"] .text-cc-warning    { color: #FCD34D; }   /* amber-300 */
+[data-theme="dark"] .text-cc-success    { color: #6EE7B7; }   /* emerald-300 */
+[data-theme="dark"] .text-cc-danger     { color: #FCA5A5; }   /* red-300 */
+[data-theme="dark"] .text-cc-gold       { color: #FACC15; }   /* yellow-400 — pop a touch more */

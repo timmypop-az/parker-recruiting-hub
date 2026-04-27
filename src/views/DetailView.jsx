@@ -162,7 +162,7 @@ export function DetailView() {
           <button
             onClick={handleDelete}
             title="Remove this school from the hub"
-            className="flex items-center gap-2 bg-cc-surface hover:bg-rose-50 border border-cc-border hover:border-rose-200 px-3 py-2 rounded-cc-sm text-cc-subtle hover:text-cc-danger text-xs font-bold uppercase tracking-cc-wider transition-colors"
+            className="flex items-center gap-2 bg-cc-surface hover:bg-rose-50 dark:bg-rose-500/15 border border-cc-border hover:border-rose-200 dark:border-rose-500/30 px-3 py-2 rounded-cc-sm text-cc-subtle hover:text-cc-danger text-xs font-bold uppercase tracking-cc-wider transition-colors"
             aria-label="Delete school"
           >
             <Trash2 className="w-4 h-4" />
@@ -173,8 +173,8 @@ export function DetailView() {
         <div
           className={`mb-4 flex items-start gap-2 px-4 py-3 rounded-cc-md border text-sm ${
             verifyMsg.kind === 'ok'
-              ? 'bg-emerald-50 border-emerald-200 text-cc-forest'
-              : 'bg-rose-50 border-rose-200 text-cc-maroon'
+              ? 'bg-emerald-50 dark:bg-emerald-500/15 border-emerald-200 dark:border-emerald-500/30 text-cc-forest'
+              : 'bg-rose-50 dark:bg-rose-500/15 border-rose-200 dark:border-rose-500/30 text-cc-maroon'
           }`}
         >
           {verifyMsg.kind === 'ok' ? (
@@ -186,7 +186,7 @@ export function DetailView() {
         </div>
       )}
       {overriddenCoach?._verified && !verifyMsg && (
-        <div className="mb-4 flex items-start gap-2 px-4 py-2 rounded-cc-md bg-emerald-50 border border-emerald-200 text-cc-forest text-xs">
+        <div className="mb-4 flex items-start gap-2 px-4 py-2 rounded-cc-md bg-emerald-50 dark:bg-emerald-500/15 border border-emerald-200 dark:border-emerald-500/30 text-cc-forest text-xs">
           <ShieldCheck className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
           <span>
             Coach re-verified from <a href={overriddenCoach._sourceUrl} target="_blank" rel="noreferrer" className="underline hover:no-underline">the school's coaches page</a>
@@ -210,7 +210,7 @@ export function DetailView() {
               <DivBadge divLevel={sel.divLevel} size="lg" />
               <PriorityBadge priority={sel.priority} />
               {sel.programRank && sel.programRank !== 'NR' && (
-                <span className="inline-flex items-center gap-1 px-3 py-1 bg-amber-50 border border-amber-200 rounded-full text-xs font-bold text-cc-warning">
+                <span className="inline-flex items-center gap-1 px-3 py-1 bg-amber-50 dark:bg-amber-500/15 border border-amber-200 dark:border-amber-500/30 rounded-full text-xs font-bold text-cc-warning">
                   <Trophy className="w-3 h-3 text-cc-gold" /> AVCA {sel.programRank}
                 </span>
               )}
@@ -330,7 +330,7 @@ export function DetailView() {
                   <div
                     key={i}
                     className={`p-3 rounded-cc-md border-l-4 ${
-                      p.hs?.includes('Brophy') ? 'border-cc-accent bg-cc-accent-soft' : 'border-cc-orange bg-orange-50/60'
+                      p.hs?.includes('Brophy') ? 'border-cc-accent bg-cc-accent-soft' : 'border-cc-orange bg-orange-50 dark:bg-orange-500/15/60'
                     }`}
                   >
                     <div className="flex items-center justify-between mb-1">
@@ -545,11 +545,11 @@ export function DetailView() {
               <div className="flex items-center justify-between mb-2">
                 <h3 className={SECTION_HEADING}>2026 Season Schedule</h3>
                 <div className="flex items-center gap-2">
-                  <span className="px-3 py-1.5 bg-emerald-50 text-cc-forest border border-emerald-200 rounded-cc-sm text-xs font-bold tabular">
+                  <span className="px-3 py-1.5 bg-emerald-50 dark:bg-emerald-500/15 text-cc-forest border border-emerald-200 dark:border-emerald-500/30 rounded-cc-sm text-xs font-bold tabular">
                     W {getRecordTally(sel.schedule26).w}
                   </span>
                   <span className="text-cc-faint font-bold">–</span>
-                  <span className="px-3 py-1.5 bg-rose-50 text-cc-maroon border border-rose-200 rounded-cc-sm text-xs font-bold tabular">
+                  <span className="px-3 py-1.5 bg-rose-50 dark:bg-rose-500/15 text-cc-maroon border border-rose-200 dark:border-rose-500/30 rounded-cc-sm text-xs font-bold tabular">
                     L {getRecordTally(sel.schedule26).l}
                   </span>
                 </div>
@@ -557,8 +557,8 @@ export function DetailView() {
               <div className="flex items-center gap-4 mb-4 text-[11px] text-cc-subtle font-semibold uppercase tracking-cc-wider">
                 <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-cc-light-blue inline-block" /> Home</span>
                 <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-cc-faint inline-block" /> Away</span>
-                <span className="flex items-center gap-1"><span className="px-1.5 py-0.5 bg-purple-50 text-cc-purple rounded-cc-sm font-bold text-[10px]">CONF</span> Conference</span>
-                <span className="flex items-center gap-1"><span className="px-1.5 py-0.5 bg-amber-50 text-cc-warning rounded-cc-sm font-bold text-[10px]">POST</span> Postseason</span>
+                <span className="flex items-center gap-1"><span className="px-1.5 py-0.5 bg-purple-50 dark:bg-purple-500/15 text-cc-purple rounded-cc-sm font-bold text-[10px]">CONF</span> Conference</span>
+                <span className="flex items-center gap-1"><span className="px-1.5 py-0.5 bg-amber-50 dark:bg-amber-500/15 text-cc-warning rounded-cc-sm font-bold text-[10px]">POST</span> Postseason</span>
               </div>
               <div className="space-y-1.5 max-h-[32rem] overflow-y-auto pr-1">
                 {sel.schedule26.map((g, i) => {
@@ -574,9 +574,9 @@ export function DetailView() {
                         isUpcoming
                           ? 'bg-cc-surface-alt/70 border-cc-border opacity-60'
                           : isWin
-                          ? 'bg-emerald-50/40 border-emerald-100'
+                          ? 'bg-emerald-50 dark:bg-emerald-500/15/40 border-emerald-100 dark:border-emerald-500/25'
                           : isLoss
-                          ? 'bg-rose-50/30 border-rose-100'
+                          ? 'bg-rose-50 dark:bg-rose-500/15/30 border-rose-100 dark:border-rose-500/25'
                           : 'bg-cc-surface border-cc-border'
                       }`}
                     >
@@ -586,12 +586,12 @@ export function DetailView() {
                         {g.o}
                       </span>
                       {isPost && (
-                        <span className="px-1.5 py-0.5 bg-amber-50 text-cc-warning border border-amber-200 rounded-cc-sm text-[10px] font-bold uppercase flex-shrink-0">
+                        <span className="px-1.5 py-0.5 bg-amber-50 dark:bg-amber-500/15 text-cc-warning border border-amber-200 dark:border-amber-500/30 rounded-cc-sm text-[10px] font-bold uppercase flex-shrink-0">
                           Post
                         </span>
                       )}
                       {isConf && !isPost && (
-                        <span className="px-1.5 py-0.5 bg-purple-50 text-cc-purple border border-purple-200 rounded-cc-sm text-[10px] font-bold uppercase flex-shrink-0">
+                        <span className="px-1.5 py-0.5 bg-purple-50 dark:bg-purple-500/15 text-cc-purple border border-purple-200 dark:border-purple-500/30 rounded-cc-sm text-[10px] font-bold uppercase flex-shrink-0">
                           Conf
                         </span>
                       )}

@@ -15,11 +15,11 @@ export const PARKER = {
 // primary navy or achievement-only gold.
 export const STATUSES = [
   { key: "None",          label: "Not Started",   dot: "#94A3B8", bg: "bg-slate-100",      text: "text-cc-subtle" },
-  { key: "Questionnaire", label: "Submitted Q",   dot: "#D97706", bg: "bg-amber-50",       text: "text-cc-warning" },
-  { key: "Reached Out",   label: "Reached Out",   dot: "#F07216", bg: "bg-orange-50",      text: "text-cc-orange" },
-  { key: "Coach Contact", label: "Coach Contact", dot: "#2E92F5", bg: "bg-sky-50",         text: "text-cc-light-blue" },
-  { key: "Campus Visit",  label: "Campus Visit",  dot: "#5E33A1", bg: "bg-purple-50",      text: "text-cc-purple" },
-  { key: "Offer",         label: "Offer",         dot: "#167A4E", bg: "bg-emerald-50",     text: "text-cc-forest" },
+  { key: "Questionnaire", label: "Submitted Q",   dot: "#D97706", bg: "bg-amber-50 dark:bg-amber-500/15",       text: "text-cc-warning" },
+  { key: "Reached Out",   label: "Reached Out",   dot: "#F07216", bg: "bg-orange-50 dark:bg-orange-500/15",      text: "text-cc-orange" },
+  { key: "Coach Contact", label: "Coach Contact", dot: "#2E92F5", bg: "bg-sky-50 dark:bg-sky-500/15",         text: "text-cc-light-blue" },
+  { key: "Campus Visit",  label: "Campus Visit",  dot: "#5E33A1", bg: "bg-purple-50 dark:bg-purple-500/15",      text: "text-cc-purple" },
+  { key: "Offer",         label: "Offer",         dot: "#167A4E", bg: "bg-emerald-50 dark:bg-emerald-500/15",     text: "text-cc-forest" },
 ];
 
 export const DIV_CONFIG = {
